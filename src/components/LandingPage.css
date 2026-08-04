@@ -1,199 +1,45 @@
 * {
-  box-sizing: border-box;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
-.proton-landing {
-  display: flex;
+.embed-landing-container {
+  position: relative;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  font-family: 'Arial Black', Impact, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background-color: #0b3263;
 }
 
-/* --- LEFT PANEL --- */
-.left-panel {
-  width: 52%;
-  height: 100%;
-  background-color: #113c70;
-  position: relative;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 40px 50px;
-  clip-path: polygon(0 0, 100% 0, 78% 100%, 0 100%);
-  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
-}
-
-.logo-header {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.proton-logo-img {
-  height: 55px;
-  width: auto;
-  background: #fff;
-  padding: 4px;
-  border-radius: 4px;
-}
-
-.proton-text {
-  color: #ffffff;
-  font-size: 28px;
-  font-weight: 900;
-  letter-spacing: 2px;
-}
-
-.center-content {
-  text-align: center;
-  max-width: 90%;
-  margin: 0 auto;
-}
-
-.dept-title {
-  color: #fdb813;
-  font-size: 22px;
-  font-weight: 900;
-  letter-spacing: 1.5px;
-  margin-bottom: 20px;
-  line-height: 1.3;
-}
-
-.system-title {
-  color: #ffffff;
-  font-size: 46px;
-  font-weight: 900;
-  letter-spacing: 2px;
-  line-height: 1.1;
-  margin-bottom: 40px;
-}
-
-/* Button Group */
-.login-action-group {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-}
-
-.login-circle-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: transparent;
-  border: 3px solid #fdb813;
-  color: #fdb813;
-  font-size: 20px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.login-btn-yellow {
-  background-color: #fdb813;
-  color: #ffffff;
-  font-size: 22px;
-  font-weight: 900;
-  padding: 10px 50px;
-  border-radius: 35px;
-  border: 2px solid #ffffff;
-  cursor: pointer;
-  letter-spacing: 2px;
-  transition: transform 0.2s, background-color 0.2s;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-
-.login-btn-yellow:hover, .login-circle-icon:hover {
-  transform: scale(1.05);
-  background-color: #e5a40b;
-}
-
-.developer-badge {
-  background-color: #ff9900;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: bold;
-  padding: 8px 25px;
-  border-radius: 0 15px 15px 0;
-  width: fit-content;
-  position: absolute;
-  bottom: 30px;
-  left: 0;
-}
-
-.yellow-accent-lines {
-  position: absolute;
-  bottom: -10px;
-  right: 15%;
-  width: 8px;
-  height: 120px;
-  background-color: #fdb813;
-  transform: rotate(28deg);
-  box-shadow: -15px 0 0 #fdb813;
-}
-
-/* --- RIGHT PANEL --- */
-.right-panel {
-  width: 60%;
-  height: 100%;
-  margin-left: -12%;
-  position: relative;
-}
-
-.plant-bg-image {
+/* Gambar poster memenuhi keseluruhan skrin skrin */
+.poster-image {
   width: 100%;
   height: 100%;
-  background-size: cover;
-  background-position: center;
+  object-fit: fill; 
 }
 
-/* Chevrons Grafik Kanan Bawah */
-.chevrons-container {
+/* Butang Lutsinar yang diselaraskan di atas butang LOGIN poster */
+.invisible-login-btn {
   position: absolute;
-  bottom: 30px;
-  right: 50px;
-  display: flex;
-  gap: 8px;
+  /* Posisi mengikut peratusan letak butang LOGIN dalam poster anda */
+  top: 66%; 
+  left: 18%; 
+  width: 18%;
+  height: 10%;
+  background: rgba(255, 255, 255, 0); /* Lutsinar sepenuhnya */
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  color: transparent; /* Sorokkan teks */
+  transition: background 0.2s, transform 0.1s;
 }
 
-.chevrons-container span {
-  color: #ffffff;
-  font-size: 45px;
-  font-weight: 900;
-  opacity: 0.9;
-  text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
-}
-
-.top-right-lines {
-  position: absolute;
-  top: 20px;
-  right: 30px;
-  width: 6px;
-  height: 100px;
-  background-color: #fdb813;
-  transform: rotate(-35deg);
-  box-shadow: -12px 0 0 #fdb813;
-}
-
-/* Responsive Support */
-@media (max-width: 900px) {
-  .left-panel {
-    width: 100%;
-    clip-path: none;
-    padding: 30px 20px;
-  }
-  .right-panel {
-    display: none;
-  }
-  .system-title {
-    font-size: 32px;
-  }
+/* Kesan Kilauan apabila tetikus berada di atas butang LOGIN */
+.invisible-login-btn:hover {
+  background: rgba(255, 255, 255, 0.15); 
+  transform: scale(1.02);
 }
