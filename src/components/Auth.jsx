@@ -1,156 +1,146 @@
 import React, { useState } from 'react';
+import LandingPage from './LandingPage';
 import { supabase } from '../supabaseClient';
 
-const Auth = () => {
-  const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
-
-  // Form Fields
-  const [name, setName] = useState('');
+export default function Auth() {
+  const [showLogin, setShowLogin] = useState(false);
+  const [isRegister, setIsRegister] = useState(false);
+  
   const [staffId, setStaffId] = useState('');
   const [password, setPassword] = useState('');
-  const [departmentCode, setDepartmentCode] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [department, setDepartment] = useState('ME');
+  const [loading, setLoading] = useState(false);
 
+  // Jika belum klik butang LOGIN di Landing Page, paparkan Landing Page
+  if (!showLogin) {
+    return <LandingPage onGoToLogin={() => setShowLogin(true)} />;
+  }
+
+  // Pengendali Login & Register
   const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const cleanStaffId = staffId.trim().toUpperCase();
-    // Menjadikan ID Staff sebagai alamat pengesahan Supabase Auth
-    const authEmail = `${cleanStaffId.toLowerCase()}@company.com`;
+    const email = `${staffId.toLowerCase().trim()}@company.com`;
 
-    if (isSignUp) {
-      // 1. Semakan Kod Jabatan (Wajib "ME")
-      if (departmentCode.trim().toUpperCase() !== 'ME') {
-        alert('Pendaftaran Gagal: Kod Jabatan tidak sah. Hanya "ME" dibenarkan.');
-        setLoading(false);
-        return;
-      }
-
-      // 2. Register ke Supabase Auth (Supaya muncul di tab Authentication -> Users)
+    if (isRegister) {
       const { data, error } = await supabase.auth.signUp({
-        email: authEmail,
-        password: password,
+        email,
+        password,
       });
 
       if (error) {
-        alert('Pendaftaran Gagal: ' + error.message);
+        alert('Gagal Daftar: ' + error.message);
       } else if (data.user) {
-        // 3. Simpan data tambahan ke jadual profiles
-        const { error: profileError } = await supabase.from('profiles').insert([
+        await supabase.from('profiles').insert([
           {
             id: data.user.id,
-            full_name: name,
-            staff_id: cleanStaffId,
-            department: 'ME',
+            full_name: fullName,
+            staff_id: staffId.toUpperCase(),
+            department: department,
           },
         ]);
-
-        if (profileError) {
-          alert('Profil Gagal Dicipta: ' + profileError.message);
-        } else {
-          alert('Pendaftaran Berjaya! Pengguna kini muncul di Supabase Authentication.');
-          setIsSignUp(false);
-          setName('');
-          setPassword('');
-          setDepartmentCode('');
-        }
+        alert('Pendaftaran Berjaya! Sila Log Masuk.');
+        setIsRegister(false);
       }
     } else {
-      // 4. Log Masuk menggunakan ID Staff
       const { error } = await supabase.auth.signInWithPassword({
-        email: authEmail,
-        password: password,
+        email,
+        password,
       });
 
       if (error) {
-        alert('Log Masuk Gagal: ID Staff atau Kata Laluan Salah.');
+        alert('Gagal Log Masuk: ' + error.message);
       }
     }
     setLoading(false);
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', fontFamily: 'Arial, sans-serif' }}>
-      <h2 style={{ textAlign: 'center', color: '#007bff' }}>
-        {isSignUp ? 'Pendaftaran Pekerja' : 'Log Masuk Sistem'}
-      </h2>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f0f2f5', fontFamily: 'Arial, sans-serif' }}>
+      <div style={{ width: '100%', maxWidth: '400px', padding: '30px', backgroundColor: '#fff', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+        <button 
+          onClick={() => setShowLogin(false)} 
+          style={{ background: 'none', border: 'none', color: '#007bff', cursor: 'pointer', marginBottom: '15px', fontWeight: 'bold' }}
+        >
+          ⬅️ Kembali ke Utama
+        </button>
 
-      <form onSubmit={handleAuth}>
-        {isSignUp && (
-          <div style={{ marginBottom: '12px' }}>
-            <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>Nama Pekerja:</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder="Masukkan nama penuh"
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-            />
-          </div>
-        )}
+        <h2 style={{ textAlign: 'center', color: '#0d3b66', marginBottom: '20px' }}>
+          {isRegister ? 'Daftar Akaun Pekerja' : 'Log Masuk Pekerja'}
+        </h2>
 
-        <div style={{ marginBottom: '12px' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>ID Staff:</label>
-          <input
-            type="text"
-            value={staffId}
-            onChange={(e) => setStaffId(e.target.value)}
-            required
-            placeholder="Contoh: ME1024"
-            style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-          />
-        </div>
+        <form onSubmit={handleAuth}>
+          {isRegister && (
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Nama Penuh:</label>
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+                style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
+              />
+            </div>
+          )}
 
-        <div style={{ marginBottom: '12px' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder="Masukkan kata laluan"
-            style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-          />
-        </div>
-
-        {isSignUp && (
           <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>Code Department:</label>
+            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>ID Staff:</label>
             <input
               type="text"
-              value={departmentCode}
-              onChange={(e) => setDepartmentCode(e.target.value)}
+              value={staffId}
+              onChange={(e) => setStaffId(e.target.value)}
+              placeholder="Contoh: 72202523"
               required
-              placeholder='Masukkan "ME"'
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
             />
           </div>
-        )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-        >
-          {loading ? 'Sila tunggu...' : isSignUp ? 'Daftar' : 'Log Masuk'}
-        </button>
-      </form>
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Kata Laluan (Password):</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
+            />
+          </div>
 
-      <div style={{ textAlign: 'center', marginTop: '15px' }}>
-        <button
-          onClick={() => {
-            setIsSignUp(!isSignUp);
-            setDepartmentCode('');
-          }}
-          style={{ background: 'none', border: 'none', color: '#007bff', cursor: 'pointer', textDecoration: 'underline' }}
-        >
-          {isSignUp ? 'Sudah ada akaun? Log masuk' : 'Belum ada akaun? Daftar sekarang'}
-        </button>
+          {isRegister && (
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Jabatan / Department:</label>
+              <select
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
+              >
+                <option value="ME">ME (Manufacturing Engineering)</option>
+                <option value="QA">QA (Quality Assurance)</option>
+                <option value="PE">PE (Process Engineering)</option>
+              </select>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{ width: '100%', padding: '12px', backgroundColor: '#0d3b66', color: '#fff', border: 'none', borderRadius: '5px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
+          >
+            {loading ? 'Sila tunggu...' : isRegister ? 'Daftar Akaun' : 'Log Masuk'}
+          </button>
+        </form>
+
+        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+          <button
+            onClick={() => setIsRegister(!isRegister)}
+            style={{ background: 'none', border: 'none', color: '#007bff', cursor: 'pointer', fontSize: '14px', textDecoration: 'underline' }}
+          >
+            {isRegister ? 'Sudah ada akaun? Log Masuk' : 'Belum ada akaun? Daftar sekarang'}
+          </button>
+        </div>
       </div>
     </div>
   );
-};
-
-export default Auth;
+}
