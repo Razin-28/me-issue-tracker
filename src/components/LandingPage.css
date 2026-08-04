@@ -4,46 +4,62 @@
   box-sizing: border-box;
 }
 
+/* Container Utama */
 .embed-landing-container {
   position: relative;
   width: 100vw;
   height: 100vh;
-  background-color: #0b3263;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #113c70; /* Warna biru gelap sepadan dengan poster */
   overflow: hidden;
 }
 
+/* Gambar Poster Untuk Paparan Laptop / PC */
 .poster-image {
   width: 100%;
   height: 100%;
-  /* cover akan membesarkan poster supaya memenuhi keseluruhan skrin telefon */
-  object-fit: cover; 
-  object-position: center;
+  object-fit: fill; /* Memenuhi skrin di PC/Laptop */
 }
 
+/* Butang Lutsinar (Invisible Button) Untuk PC/Laptop */
 .invisible-login-btn {
   position: absolute;
-  top: 62%; 
+  top: 66%; 
   left: 18%; 
-  width: 20%;
-  height: 8%;
-  background: rgba(255, 255, 255, 0);
+  width: 18%;
+  height: 10%;
+  background: rgba(255, 255, 255, 0); /* Lutsinar sepenuhnya */
   border: none;
   border-radius: 50px;
   cursor: pointer;
   color: transparent;
+  transition: background 0.2s, transform 0.1s;
 }
 
-/* Penyesuaian Khas Telefon Bimbit */
+.invisible-login-btn:hover {
+  background: rgba(255, 255, 255, 0.15); /* Kesan kilauan bila tetikus lalu */
+  transform: scale(1.02);
+}
+
+/* --- Penyelarasan Khas Untuk Skrin Telefon Bimbit (Mobile Auto-Fit) --- */
 @media (max-width: 768px) {
-  .poster-image {
-    object-fit: cover;
-    object-position: 25% center; /* Fokus bahagian teks & butang LOGIN di telefon */
+  .embed-landing-container {
+    background-color: #113c70; /* Sama warna latar dengan poster */
   }
 
+  .poster-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain; /* Kekalkan nisbah asal poster tanpa terpotong atau zoom */
+  }
+
+  /* Selaraskan kedudukan butang LOGIN di skrin telefon */
   .invisible-login-btn {
-    top: 61%;
-    left: 28%;
-    width: 44%;
-    height: 7%;
+    top: 55%;
+    left: 17%;
+    width: 32%;
+    height: 6%;
   }
 }
