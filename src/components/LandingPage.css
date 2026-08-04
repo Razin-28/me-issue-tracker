@@ -4,42 +4,59 @@
   box-sizing: border-box;
 }
 
+/* Container Utama */
 .embed-landing-container {
   position: relative;
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #0b3263;
+  overflow: hidden;
 }
 
-/* Gambar poster memenuhi keseluruhan skrin skrin */
+/* Poster Auto-Fit mengikut Nisbah Skrin */
 .poster-image {
   width: 100%;
   height: 100%;
-  object-fit: fill; 
+  /* object-fit: contain memastikan keseluruhan poster nampak penuh tanpa terpotong pada telefon */
+  object-fit: contain; 
 }
 
-/* Butang Lutsinar yang diselaraskan di atas butang LOGIN poster */
+/* Butang Lutsinar (Invisible Button) */
 .invisible-login-btn {
   position: absolute;
-  /* Posisi mengikut peratusan letak butang LOGIN dalam poster anda */
   top: 66%; 
   left: 18%; 
   width: 18%;
   height: 10%;
-  background: rgba(255, 255, 255, 0); /* Lutsinar sepenuhnya */
+  background: rgba(255, 255, 255, 0);
   border: none;
   border-radius: 50px;
   cursor: pointer;
-  color: transparent; /* Sorokkan teks */
+  color: transparent;
   transition: background 0.2s, transform 0.1s;
 }
 
-/* Kesan Kilauan apabila tetikus berada di atas butang LOGIN */
 .invisible-login-btn:hover {
   background: rgba(255, 255, 255, 0.15); 
   transform: scale(1.02);
+}
+
+/* --- Penyelarasan Khas Untuk Skrin Telefon Bimbit (Mobile Auto-Fit) --- */
+@media (max-width: 768px) {
+  .poster-image {
+    width: 100%;
+    height: auto;
+    max-height: 100vh;
+  }
+
+  /* Melaraskan kawasan butang login supaya kekal tepat pada tempatnya di telefon */
+  .invisible-login-btn {
+    top: 62%;
+    left: 15%;
+    width: 25%;
+    height: 8%;
+  }
 }
