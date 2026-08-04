@@ -1,138 +1,199 @@
-.landing-container {
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.proton-landing {
   display: flex;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Arial Black', Impact, sans-serif;
+  background-color: #0b3263;
 }
 
-/* Bahagian Kiri */
-.landing-left {
-  width: 45%;
-  background-color: #0d3b66;
-  color: white;
-  padding: 40px;
+/* --- LEFT PANEL --- */
+.left-panel {
+  width: 52%;
+  height: 100%;
+  background-color: #113c70;
+  position: relative;
+  z-index: 5;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  position: relative;
-  z-index: 2;
-  box-shadow: 5px 0 20px rgba(0, 0, 0, 0.3);
-  /* Potongan condong di bahagian kanan */
-  clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+  padding: 40px 50px;
+  clip-path: polygon(0 0, 100% 0, 78% 100%, 0 100%);
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
 }
 
-.brand-logo {
+.logo-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: 2px;
+  gap: 15px;
 }
 
-.logo-icon {
-  background: white;
-  color: #0d3b66;
-  padding: 6px 12px;
-  border-radius: 50%;
-  font-size: 18px;
-}
-
-.hero-content {
-  margin-top: -40px;
-}
-
-.sub-heading {
-  color: #f4d03f;
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 10px;
-  letter-spacing: 1px;
-}
-
-.main-heading {
-  font-size: 42px;
-  font-weight: 900;
-  line-height: 1.2;
-  letter-spacing: 2px;
-  margin-bottom: 35px;
-}
-
-.action-section {
-  display: flex;
-  align-items: center;
-}
-
-.login-btn {
-  display: flex;
-  align-items: center;
-  background-color: #f4d03f;
-  border: none;
-  padding: 8px 30px 8px 10px;
-  border-radius: 30px;
-  cursor: pointer;
-  transition: transform 0.2s ease, background-color 0.2s ease;
-}
-
-.login-btn:hover {
-  transform: scale(1.05);
-  background-color: #f1c40f;
-}
-
-.arrow-circle {
-  background-color: #0d3b66;
-  color: #f4d03f;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  margin-right: 15px;
-}
-
-.btn-text {
-  color: #0d3b66;
-  font-weight: 900;
-  font-size: 18px;
-  letter-spacing: 1px;
-}
-
-.landing-footer {
-  background-color: #f39c12;
-  color: white;
-  padding: 8px 20px;
-  width: fit-content;
-  font-size: 14px;
-  font-weight: bold;
+.proton-logo-img {
+  height: 55px;
+  width: auto;
+  background: #fff;
+  padding: 4px;
   border-radius: 4px;
 }
 
-/* Bahagian Kanan */
-.landing-right {
+.proton-text {
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.center-content {
+  text-align: center;
+  max-width: 90%;
+  margin: 0 auto;
+}
+
+.dept-title {
+  color: #fdb813;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  margin-bottom: 20px;
+  line-height: 1.3;
+}
+
+.system-title {
+  color: #ffffff;
+  font-size: 46px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  line-height: 1.1;
+  margin-bottom: 40px;
+}
+
+/* Button Group */
+.login-action-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.login-circle-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: transparent;
+  border: 3px solid #fdb813;
+  color: #fdb813;
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.login-btn-yellow {
+  background-color: #fdb813;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 900;
+  padding: 10px 50px;
+  border-radius: 35px;
+  border: 2px solid #ffffff;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: transform 0.2s, background-color 0.2s;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.login-btn-yellow:hover, .login-circle-icon:hover {
+  transform: scale(1.05);
+  background-color: #e5a40b;
+}
+
+.developer-badge {
+  background-color: #ff9900;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 8px 25px;
+  border-radius: 0 15px 15px 0;
+  width: fit-content;
+  position: absolute;
+  bottom: 30px;
+  left: 0;
+}
+
+.yellow-accent-lines {
+  position: absolute;
+  bottom: -10px;
+  right: 15%;
+  width: 8px;
+  height: 120px;
+  background-color: #fdb813;
+  transform: rotate(28deg);
+  box-shadow: -15px 0 0 #fdb813;
+}
+
+/* --- RIGHT PANEL --- */
+.right-panel {
   width: 60%;
-  margin-left: -10%;
-  background: url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+  height: 100%;
+  margin-left: -12%;
   position: relative;
 }
 
-/* Responsif untuk skrin telefon */
-@media (max-width: 768px) {
-  .landing-container {
-    flex-direction: column;
-  }
-  .landing-left {
+.plant-bg-image {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Chevrons Grafik Kanan Bawah */
+.chevrons-container {
+  position: absolute;
+  bottom: 30px;
+  right: 50px;
+  display: flex;
+  gap: 8px;
+}
+
+.chevrons-container span {
+  color: #ffffff;
+  font-size: 45px;
+  font-weight: 900;
+  opacity: 0.9;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+}
+
+.top-right-lines {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  width: 6px;
+  height: 100px;
+  background-color: #fdb813;
+  transform: rotate(-35deg);
+  box-shadow: -12px 0 0 #fdb813;
+}
+
+/* Responsive Support */
+@media (max-width: 900px) {
+  .left-panel {
     width: 100%;
-    height: 100%;
     clip-path: none;
     padding: 30px 20px;
   }
-  .landing-right {
+  .right-panel {
     display: none;
   }
-  .main-heading {
-    font-size: 30px;
+  .system-title {
+    font-size: 32px;
   }
 }
