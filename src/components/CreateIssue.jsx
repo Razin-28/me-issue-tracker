@@ -61,7 +61,7 @@ export default function CreateIssue({ onBackToDashboard }) {
             type="text" 
             value={whatIssue} 
             onChange={(e) => setWhatIssue(e.target.value)} 
-            placeholder="e.g., Conveyor Engine Stoppage"
+            placeholder="Issue"
             required 
             style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
           />
@@ -72,7 +72,7 @@ export default function CreateIssue({ onBackToDashboard }) {
           <textarea 
             value={description} 
             onChange={(e) => setDescription(e.target.value)} 
-            placeholder="Detailed description of the issue..."
+            placeholder=""
             rows="4" 
             required 
             style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
@@ -85,7 +85,7 @@ export default function CreateIssue({ onBackToDashboard }) {
             type="text" 
             value={location} 
             onChange={(e) => setLocation(e.target.value)} 
-            placeholder="e.g., Line 2 - Engine Assembly"
+            placeholder=""
             required 
             style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
           />
@@ -109,9 +109,9 @@ export default function CreateIssue({ onBackToDashboard }) {
             onChange={(e) => setClassification(e.target.value)}
             style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
           >
-            <option value="A">A = High</option>
-            <option value="B">B = Medium</option>
-            <option value="C">C = Low</option>
+            <option value="A">A - High</option>
+            <option value="B">B - Medium</option>
+            <option value="C">C - Low</option>
           </select>
         </div>
 
