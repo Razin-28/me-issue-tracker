@@ -61,7 +61,7 @@ export default function CreateIssue({ onBackToDashboard }) {
             type="text" 
             value={whatIssue} 
             onChange={(e) => setWhatIssue(e.target.value)} 
-            placeholder="Issue"
+            placeholder=""
             required 
             style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
           />
