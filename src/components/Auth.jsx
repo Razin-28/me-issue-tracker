@@ -9,15 +9,18 @@ export default function Auth() {
   const [staffId, setStaffId] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [department, setDepartment] = useState('ME');
+  const [deptCode, setDeptCode] = useState(''); // State untuk Department Code
   const [loading, setLoading] = useState(false);
 
-  // Jika belum klik butang LOGIN di Landing Page, paparkan Landing Page
+  const REQUIRED_DEPT_CODE = "ME";
+  const DEFAULT_DEPARTMENT = "ME"; // Set terus ke ME
+
+  // Display Landing Page if LOGIN button is not clicked yet
   if (!showLogin) {
     return <LandingPage onGoToLogin={() => setShowLogin(true)} />;
   }
 
-  // Pengendali Login & Register
+  // Handle Login & Register
   const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -25,24 +28,48 @@ export default function Auth() {
     const email = `${staffId.toLowerCase().trim()}@company.com`;
 
     if (isRegister) {
+      // Semakan Department Code
+      if (deptCode.trim() !== REQUIRED_DEPT_CODE) {
+        alert('Invalid Department Code! Registration rejected.');
+        setLoading(false);
+        return;
+      }
+
+      // 1. Save user_metadata in options during sign up
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName,
+            name: fullName,
+            staff_id: staffId.toUpperCase(),
+            department: DEFAULT_DEPARTMENT,
+          },
+        },
       });
 
       if (error) {
-        alert('Gagal Daftar: ' + error.message);
+        alert('Registration Failed: ' + error.message);
       } else if (data.user) {
-        await supabase.from('profiles').insert([
-          {
-            id: data.user.id,
-            full_name: fullName,
-            staff_id: staffId.toUpperCase(),
-            department: department,
-          },
-        ]);
-        alert('Pendaftaran Berjaya! Sila Log Masuk.');
+        // 2. Save to profiles table
+        try {
+          await supabase.from('profiles').upsert([
+            {
+              id: data.user.id,
+              full_name: fullName,
+              staff_id: staffId.toUpperCase(),
+              department: DEFAULT_DEPARTMENT,
+              email: email,
+            },
+          ]);
+        } catch (profileErr) {
+          console.warn('Profiles upsert note:', profileErr);
+        }
+
+        alert('Registration Successful! Please log in.');
         setIsRegister(false);
+        setDeptCode('');
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({
@@ -51,7 +78,7 @@ export default function Auth() {
       });
 
       if (error) {
-        alert('Gagal Log Masuk: ' + error.message);
+        alert('Login Failed: ' + error.message);
       }
     }
     setLoading(false);
@@ -64,62 +91,63 @@ export default function Auth() {
           onClick={() => setShowLogin(false)} 
           style={{ background: 'none', border: 'none', color: '#007bff', cursor: 'pointer', marginBottom: '15px', fontWeight: 'bold' }}
         >
-          ⬅️ Kembali ke Utama
+          ⬅️ Back to Main
         </button>
 
         <h2 style={{ textAlign: 'center', color: '#0d3b66', marginBottom: '20px' }}>
-          {isRegister ? 'Daftar Akaun Pekerja' : 'Log Masuk Pekerja'}
+          {isRegister ? 'Registration' : 'Login'}
         </h2>
 
         <form onSubmit={handleAuth}>
           {isRegister && (
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Nama Penuh:</label>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Full Name:</label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
+                placeholder="Enter your full name"
                 style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
               />
             </div>
           )}
 
           <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>ID Staff:</label>
+            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Staff ID:</label>
             <input
               type="text"
               value={staffId}
               onChange={(e) => setStaffId(e.target.value)}
-              placeholder="Contoh: 72202523"
+              placeholder="Enter your staff ID"
               required
               style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
             />
           </div>
 
           <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Kata Laluan (Password):</label>
+            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Password:</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              placeholder="Enter your password"
               style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
             />
           </div>
 
           {isRegister && (
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Jabatan / Department:</label>
-              <select
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Department Code:</label>
+              <input
+                type="password"
+                value={deptCode}
+                onChange={(e) => setDeptCode(e.target.value)}
+                required
+                placeholder="Enter Department Code"
                 style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
-              >
-                <option value="ME">ME (Manufacturing Engineering)</option>
-                <option value="QA">QA (Quality Assurance)</option>
-                <option value="PE">PE (Process Engineering)</option>
-              </select>
+              />
             </div>
           )}
 
@@ -128,7 +156,7 @@ export default function Auth() {
             disabled={loading}
             style={{ width: '100%', padding: '12px', backgroundColor: '#0d3b66', color: '#fff', border: 'none', borderRadius: '5px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
           >
-            {loading ? 'Sila tunggu...' : isRegister ? 'Daftar Akaun' : 'Log Masuk'}
+            {loading ? 'Please wait...' : isRegister ? 'Register Account' : 'Log In'}
           </button>
         </form>
 
@@ -137,7 +165,7 @@ export default function Auth() {
             onClick={() => setIsRegister(!isRegister)}
             style={{ background: 'none', border: 'none', color: '#007bff', cursor: 'pointer', fontSize: '14px', textDecoration: 'underline' }}
           >
-            {isRegister ? 'Sudah ada akaun? Log Masuk' : 'Belum ada akaun? Daftar sekarang'}
+            {isRegister ? 'Already have an account? Log In' : "Don't have an account? Register now"}
           </button>
         </div>
       </div>
