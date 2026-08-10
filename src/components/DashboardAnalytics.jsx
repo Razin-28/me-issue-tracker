@@ -70,16 +70,6 @@ export default function DashboardAnalytics() {
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Arial, sans-serif', backgroundColor: '#f4f6f9', minHeight: '100vh' }}>
       
-      {/* 🖼️ GAMBAR BANNER BARU YANG ANDA DOWNLOAD */}
-      <div style={{ width: '100%', marginBottom: '20px', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-        <img 
-          src="/DashboardAnalytics.png" /* <--- Nama gambar dalam folder public/ */
-          alt="ME Analytics Banner" 
-          style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }}
-          onError={(e) => { e.target.style.display = 'none'; }} /* Sembunyikan jika gambar tiada */
-        />
-      </div>
-
       {/* Header Bar */}
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px', backgroundColor: '#0d3b66', padding: '15px 20px', borderRadius: '8px', color: '#fff' }}>
         <h2 style={{ margin: 0, fontSize: '22px', textAlign: 'center' }}>Dashboard Analytics</h2>

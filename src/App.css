@@ -168,7 +168,10 @@
 }
 
 .card-dashboard {
-  background-image: url('https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=500&q=80');
+  background-image: url('DashboardAnalytics.png'); /* <--- Tukar pautan gambar di sini */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .card-escalate {
