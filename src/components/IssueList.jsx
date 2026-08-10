@@ -50,39 +50,50 @@ export default function IssueList({ onBackToDashboard }) {
       alert('Failed to delete issue: ' + error.message);
     } else {
       alert('Issue deleted successfully!');
-      fetchIssues(); // Refresh list after deletion
+      fetchIssues();
     }
   };
 
-  // Format Date & Time to DD/MM/YY, 12-hour format
+  // Format Tarikh & Masa dengan cara memotong string terus (Bypass UTC Offset)
   const formatDateTime = (dateTimeStr) => {
     if (!dateTimeStr) return '-';
-    const date = new Date(dateTimeStr);
     
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = String(date.getFullYear()).slice(-2);
-    
-    const timeStr = date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
+    // Asingkan tarikh dan masa berasaskan ruang atau huruf 'T'
+    const cleanStr = dateTimeStr.replace('T', ' ');
+    const [datePart, timePart] = cleanStr.split(' ');
 
-    return `${day}/${month}/${year}, ${timeStr}`;
+    if (datePart && datePart.includes('-')) {
+      const [year, month, day] = datePart.split('-');
+      let formattedTime = '';
+
+      if (timePart) {
+        const timeSegments = timePart.split(':');
+        let hours = parseInt(timeSegments[0], 10);
+        const minutes = timeSegments[1];
+
+        if (!isNaN(hours)) {
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          hours = hours % 12;
+          hours = hours ? hours : 12; // Tukar 0 kepada 12
+          formattedTime = `, ${hours}:${minutes} ${ampm}`;
+        }
+      }
+
+      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year.slice(-2)}${formattedTime}`;
+    }
+
+    return dateTimeStr;
   };
 
-  // Format Date Only to DD/MM/YY
+  // Format Date Only (DD/MM/YY)
   const formatDateOnly = (dateStr) => {
     if (!dateStr) return '-';
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return dateStr;
-    
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = String(date.getFullYear()).slice(-2);
-
-    return `${day}/${month}/${year}`;
+    const dateOnlyPart = dateStr.split('T')[0].split(' ')[0];
+    if (dateOnlyPart && dateOnlyPart.includes('-')) {
+      const [year, month, day] = dateOnlyPart.split('-');
+      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year.slice(-2)}`;
+    }
+    return dateStr;
   };
 
   const handleUpdateProgress = async (e) => {
@@ -113,7 +124,6 @@ export default function IssueList({ onBackToDashboard }) {
 
   // Filter issues based on Search, Status & Date
   const filteredIssues = issues.filter((issue) => {
-    // 1. Search filter
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = 
       (issue.what_issue && issue.what_issue.toLowerCase().includes(searchLower)) ||
@@ -121,7 +131,6 @@ export default function IssueList({ onBackToDashboard }) {
       (issue.location && issue.location.toLowerCase().includes(searchLower)) ||
       (issue.pic && issue.pic.toLowerCase().includes(searchLower));
 
-    // 2. Status filter
     let matchesStatus = true;
     if (statusFilter !== 'All') {
       if (statusFilter === 'Completed') {
@@ -131,20 +140,14 @@ export default function IssueList({ onBackToDashboard }) {
       }
     }
 
-    // 3. Date filter
     let matchesDate = true;
     if (dateFilter) {
-      const issueDateStr = issue.updated_at || issue.created_at;
-      const issueFormattedDate = issueDateStr ? new Date(issueDateStr).toISOString().split('T')[0] : '';
+      const issueDateStr = issue.date_time || issue.created_at;
+      const issueFormattedDate = issueDateStr ? issueDateStr.split('T')[0].split(' ')[0] : '';
 
       let estClosingFormattedDate = '';
       if (issue.estimated_closing) {
-        const estDate = new Date(issue.estimated_closing);
-        if (!isNaN(estDate.getTime())) {
-          estClosingFormattedDate = estDate.toISOString().split('T')[0];
-        } else {
-          estClosingFormattedDate = issue.estimated_closing;
-        }
+        estClosingFormattedDate = issue.estimated_closing.split('T')[0].split(' ')[0];
       }
 
       matchesDate = (issueFormattedDate === dateFilter) || (estClosingFormattedDate === dateFilter);
@@ -250,6 +253,9 @@ export default function IssueList({ onBackToDashboard }) {
             const statusColor = isCompleted ? '#28a745' : issue.status === 'In Progress' ? '#ffc107' : '#dc3545';
             const textColor = issue.status === 'In Progress' ? '#000' : '#fff';
 
+            // Mengambil terus string raw date_time tanpa convert timezone
+            const manualDate = issue.date_time || issue.created_at;
+
             return (
               <div 
                 key={issue.id} 
@@ -265,17 +271,14 @@ export default function IssueList({ onBackToDashboard }) {
                 }}
               >
                 <div>
-                  {/* Date Format */}
                   <div style={{ fontSize: '11px', color: '#666', fontWeight: 'bold', marginBottom: '8px', borderBottom: '1px solid #eee', paddingBottom: '4px' }}>
-                    📅 Date: {formatDateTime(issue.updated_at || issue.created_at)}
+                    📅 Date: {formatDateTime(manualDate)}
                   </div>
 
-                  {/* Main Issue Title */}
                   <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#0d3b66', marginBottom: '10px', textTransform: 'capitalize' }}>
                     {issue.what_issue || 'Untitled Issue'}
                   </div>
 
-                  {/* Card Details */}
                   <div style={{ fontSize: '12px', color: '#444', display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '12px' }}>
                     <div>🆔 <b>Staff ID:</b> {issue.staff_id || '-'}</div>
                     <div>📍 <b>Location:</b> {issue.location || '-'}</div>
@@ -290,10 +293,8 @@ export default function IssueList({ onBackToDashboard }) {
                   </div>
                 </div>
 
-                {/* Status Badge, View, Update & Delete Actions */}
                 <div style={{ borderTop: '1px solid #eee', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                   
-                  {/* Status Badge */}
                   <span style={{ 
                     backgroundColor: statusColor, 
                     color: textColor, 
@@ -306,7 +307,6 @@ export default function IssueList({ onBackToDashboard }) {
                   </span>
 
                   <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                    {/* View Attachment Button */}
                     {issue.file_url && (
                       <a 
                         href={issue.file_url} 
@@ -318,7 +318,6 @@ export default function IssueList({ onBackToDashboard }) {
                       </a>
                     )}
                     
-                    {/* Update Progress Button */}
                     <button 
                       onClick={() => {
                         setSelectedIssue(issue);
@@ -339,7 +338,6 @@ export default function IssueList({ onBackToDashboard }) {
                       ✏️ Update
                     </button>
 
-                    {/* Delete Issue Button */}
                     <button 
                       onClick={() => handleDeleteIssue(issue.id, issue.what_issue)}
                       style={{ 
