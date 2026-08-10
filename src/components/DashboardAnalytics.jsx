@@ -55,7 +55,6 @@ export default function DashboardAnalytics() {
         { name: 'Completed', value: completedCount, color: '#28a745' },
       ]);
 
-      // Susun lokasi mengikut jumlah isu tertinggi
       const sortedLocations = Object.keys(locationMap)
         .map((loc) => ({ location: loc, count: locationMap[loc] }))
         .sort((a, b) => b.count - a.count);
@@ -65,15 +64,22 @@ export default function DashboardAnalytics() {
     setLoading(false);
   };
 
-  // Paparkan Top 20 secara lalai (default)
   const displayedLocationData = showAllLocations ? locationData : locationData.slice(0, 20);
-  
-  // Lebar dinamik untuk X-Scrollbar jika mod Show All aktif
   const chartWidth = showAllLocations ? Math.max(1000, locationData.length * 45) : '100%';
 
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Arial, sans-serif', backgroundColor: '#f4f6f9', minHeight: '100vh' }}>
       
+      {/* 🖼️ GAMBAR BANNER BARU YANG ANDA DOWNLOAD */}
+      <div style={{ width: '100%', marginBottom: '20px', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
+        <img 
+          src="/DashboardAnalytics.png" /* <--- Nama gambar dalam folder public/ */
+          alt="ME Analytics Banner" 
+          style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }}
+          onError={(e) => { e.target.style.display = 'none'; }} /* Sembunyikan jika gambar tiada */
+        />
+      </div>
+
       {/* Header Bar */}
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px', backgroundColor: '#0d3b66', padding: '15px 20px', borderRadius: '8px', color: '#fff' }}>
         <h2 style={{ margin: 0, fontSize: '22px', textAlign: 'center' }}>Dashboard Analytics</h2>
@@ -126,7 +132,7 @@ export default function DashboardAnalytics() {
               </div>
             </div>
 
-            {/* Graf 2: Issues Breakdown by Location / Station (Top 20) */}
+            {/* Graf 2: Issues Breakdown by Location / Station */}
             <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '15px' }}>
                 <h3 style={{ margin: 0, color: '#0d3b66', fontSize: '16px' }}>
