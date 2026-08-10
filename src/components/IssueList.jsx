@@ -5,18 +5,18 @@ export default function IssueList({ onBackToDashboard }) {
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // State untuk Carian, Filter Status & Filter Tarikh
+  // State for Search, Status Filter & Date Filter
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [dateFilter, setDateFilter] = useState(''); // YYYY-MM-DD dari input date
+  const [dateFilter, setDateFilter] = useState('');
 
-  // State untuk modal update progress
+  // State for progress update modal
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [newStatus, setNewStatus] = useState('');
   const [progressNote, setProgressNote] = useState('');
   const [updating, setUpdating] = useState(false);
 
-  // Ambil senarai isu daripada Supabase
+  // Fetch issue list from Supabase
   const fetchIssues = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -36,7 +36,25 @@ export default function IssueList({ onBackToDashboard }) {
     fetchIssues();
   }, []);
 
-  // Format Tarikh & Masa kepada DD/MM/YY (e.g. 08/06/26, 2:22 PM)
+  // Delete Issue Function
+  const handleDeleteIssue = async (issueId, issueTitle) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete the issue "${issueTitle || 'this issue'}"?`);
+    if (!confirmDelete) return;
+
+    const { error } = await supabase
+      .from('issues')
+      .delete()
+      .eq('id', issueId);
+
+    if (error) {
+      alert('Failed to delete issue: ' + error.message);
+    } else {
+      alert('Issue deleted successfully!');
+      fetchIssues(); // Refresh list after deletion
+    }
+  };
+
+  // Format Date & Time to DD/MM/YY, 12-hour format
   const formatDateTime = (dateTimeStr) => {
     if (!dateTimeStr) return '-';
     const date = new Date(dateTimeStr);
@@ -54,7 +72,7 @@ export default function IssueList({ onBackToDashboard }) {
     return `${day}/${month}/${year}, ${timeStr}`;
   };
 
-  // Format Tarikh Sahaja kepada DD/MM/YY (e.g. untuk Est. Closing)
+  // Format Date Only to DD/MM/YY
   const formatDateOnly = (dateStr) => {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
@@ -93,9 +111,9 @@ export default function IssueList({ onBackToDashboard }) {
     setUpdating(false);
   };
 
-  // Penapisan isu berdasarkan Carian, Status & Tarikh (Date)
+  // Filter issues based on Search, Status & Date
   const filteredIssues = issues.filter((issue) => {
-    // 1. Semak Carian (Search)
+    // 1. Search filter
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = 
       (issue.what_issue && issue.what_issue.toLowerCase().includes(searchLower)) ||
@@ -103,7 +121,7 @@ export default function IssueList({ onBackToDashboard }) {
       (issue.location && issue.location.toLowerCase().includes(searchLower)) ||
       (issue.pic && issue.pic.toLowerCase().includes(searchLower));
 
-    // 2. Semak Filter Status
+    // 2. Status filter
     let matchesStatus = true;
     if (statusFilter !== 'All') {
       if (statusFilter === 'Completed') {
@@ -113,14 +131,12 @@ export default function IssueList({ onBackToDashboard }) {
       }
     }
 
-    // 3. Semak Filter Tarikh (Semak Tarikh Isu ATAU Tarikh Est. Closing)
+    // 3. Date filter
     let matchesDate = true;
     if (dateFilter) {
-      // Tarikh Isu Dicipta / Dikemas kini
       const issueDateStr = issue.updated_at || issue.created_at;
       const issueFormattedDate = issueDateStr ? new Date(issueDateStr).toISOString().split('T')[0] : '';
 
-      // Tarikh Est. Closing
       let estClosingFormattedDate = '';
       if (issue.estimated_closing) {
         const estDate = new Date(issue.estimated_closing);
@@ -131,7 +147,6 @@ export default function IssueList({ onBackToDashboard }) {
         }
       }
 
-      // Padan jika Date biasa ATAU Est. Closing sama dengan dateFilter
       matchesDate = (issueFormattedDate === dateFilter) || (estClosingFormattedDate === dateFilter);
     }
 
@@ -141,20 +156,20 @@ export default function IssueList({ onBackToDashboard }) {
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Arial, sans-serif', backgroundColor: '#f4f6f9', minHeight: '100vh' }}>
       
-      {/* Header Bar - Tajuk di Tengah */}
+      {/* Header Bar */}
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px', backgroundColor: '#0d3b66', padding: '15px 20px', borderRadius: '8px', color: '#fff' }}>
         <h2 style={{ margin: 0, fontSize: '22px', textAlign: 'center' }}>Issue List</h2>
       </div>
 
-      {/* Bar Carian & Penapis (Search & Filter Bar) */}
+      {/* Search & Filter Bar */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', marginBottom: '20px', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', padding: '12px 16px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
         
-        {/* Input Carian (Search Bar) */}
+        {/* Search Input */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '1', minWidth: '220px' }}>
           <span style={{ fontSize: '16px' }}>🔍</span>
           <input 
             type="text" 
-            placeholder="Search" 
+            placeholder="Search..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
@@ -176,7 +191,7 @@ export default function IssueList({ onBackToDashboard }) {
           )}
         </div>
 
-        {/* Filter Tarikh (Date / Est. Closing) */}
+        {/* Date Filter */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#333' }}>📅 Date:</span>
           <input 
@@ -195,7 +210,7 @@ export default function IssueList({ onBackToDashboard }) {
           )}
         </div>
 
-        {/* Filter Status */}
+        {/* Status Filter */}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#333' }}>Filter:</span>
           {['All', 'Open', 'In Progress', 'Completed'].map((status) => {
@@ -227,7 +242,7 @@ export default function IssueList({ onBackToDashboard }) {
       {loading ? (
         <p style={{ textAlign: 'center', padding: '40px' }}>Loading issues...</p>
       ) : filteredIssues.length === 0 ? (
-        <p style={{ textAlign: 'center', padding: '40px' }}>No issues found matching your search or filter.</p>
+        <p style={{ textAlign: 'center', padding: '40px' }}>No issues found matching your search or filter criteria.</p>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '15px' }}>
           {filteredIssues.map((issue) => {
@@ -246,23 +261,23 @@ export default function IssueList({ onBackToDashboard }) {
                   boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
                   display: 'flex',
                   flexDirection: 'column',
-                  justify: 'space-between'
+                  justifyContent: 'space-between'
                 }}
               >
                 <div>
-                  {/* Format Date: DD/MM/YY */}
+                  {/* Date Format */}
                   <div style={{ fontSize: '11px', color: '#666', fontWeight: 'bold', marginBottom: '8px', borderBottom: '1px solid #eee', paddingBottom: '4px' }}>
                     📅 Date: {formatDateTime(issue.updated_at || issue.created_at)}
                   </div>
 
-                  {/* Main Issue */}
+                  {/* Main Issue Title */}
                   <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#0d3b66', marginBottom: '10px', textTransform: 'capitalize' }}>
                     {issue.what_issue || 'Untitled Issue'}
                   </div>
 
-                  {/* Maklumat Kad */}
+                  {/* Card Details */}
                   <div style={{ fontSize: '12px', color: '#444', display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '12px' }}>
-                    <div>🆔 <b>ID Staff:</b> {issue.staff_id || '-'}</div>
+                    <div>🆔 <b>Staff ID:</b> {issue.staff_id || '-'}</div>
                     <div>📍 <b>Location:</b> {issue.location || '-'}</div>
                     <div>👤 <b>PIC:</b> {issue.pic || '-'}</div>
                     <div>🎯 <b>Est. Closing:</b> {formatDateOnly(issue.estimated_closing)}</div>
@@ -275,8 +290,8 @@ export default function IssueList({ onBackToDashboard }) {
                   </div>
                 </div>
 
-                {/* Status, View & Update Progress */}
-                <div style={{ borderTop: '1px solid #eee', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                {/* Status Badge, View, Update & Delete Actions */}
+                <div style={{ borderTop: '1px solid #eee', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                   
                   {/* Status Badge */}
                   <span style={{ 
@@ -290,8 +305,8 @@ export default function IssueList({ onBackToDashboard }) {
                     {issue.status || 'Open'}
                   </span>
 
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    {/* Butang View */}
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    {/* View Attachment Button */}
                     {issue.file_url && (
                       <a 
                         href={issue.file_url} 
@@ -303,7 +318,7 @@ export default function IssueList({ onBackToDashboard }) {
                       </a>
                     )}
                     
-                    {/* Butang Update Progress */}
+                    {/* Update Progress Button */}
                     <button 
                       onClick={() => {
                         setSelectedIssue(issue);
@@ -314,14 +329,31 @@ export default function IssueList({ onBackToDashboard }) {
                         border: 'none', 
                         backgroundColor: '#e9ecef', 
                         cursor: 'pointer', 
-                        padding: '5px 10px', 
+                        padding: '5px 8px', 
                         borderRadius: '4px', 
                         fontSize: '11px', 
                         fontWeight: 'bold',
                         color: '#333'
                       }}
                     >
-                      ✏️ Update Progress
+                      ✏️ Update
+                    </button>
+
+                    {/* Delete Issue Button */}
+                    <button 
+                      onClick={() => handleDeleteIssue(issue.id, issue.what_issue)}
+                      style={{ 
+                        border: 'none', 
+                        backgroundColor: '#dc3545', 
+                        color: '#fff',
+                        cursor: 'pointer', 
+                        padding: '5px 8px', 
+                        borderRadius: '4px', 
+                        fontSize: '11px', 
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      🗑️ Delete
                     </button>
                   </div>
                 </div>
@@ -332,7 +364,7 @@ export default function IssueList({ onBackToDashboard }) {
         </div>
       )}
 
-      {/* Modal Pop-up */}
+      {/* Update Progress Modal */}
       {selectedIssue && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', width: '90%', maxWidth: '420px', boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>

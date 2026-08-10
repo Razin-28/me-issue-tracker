@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend,
@@ -7,16 +7,14 @@ import {
 
 export default function DashboardAnalytics() {
   const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState('all'); // Pilihan: 'all', 'day', 'week', 'month', 'year'
   const [stats, setStats] = useState({ total: 0, open: 0, inProgress: 0, completed: 0 });
   const [statusData, setStatusData] = useState([]);
   const [locationData, setLocationData] = useState([]);
   const [showAllLocations, setShowAllLocations] = useState(false);
 
-  useEffect(() => {
-    fetchAnalyticsData();
-  }, []);
-
-  const fetchAnalyticsData = async () => {
+  // 1. Fungsi penapis & pengambilan data daripada Supabase
+  const fetchAnalyticsData = useCallback(async () => {
     setLoading(true);
     const { data: issues, error } = await supabase.from('issues').select('*');
 
@@ -27,12 +25,32 @@ export default function DashboardAnalytics() {
     }
 
     if (issues) {
+      const now = new Date();
+
+      // Tapisan data mengikut julat masa (created_at)
+      const filteredIssues = issues.filter((item) => {
+        if (timeRange === 'all') return true;
+        
+        const createdDate = new Date(item.created_at || item.created_date);
+        if (isNaN(createdDate.getTime())) return true;
+
+        const diffInTime = now.getTime() - createdDate.getTime();
+        const diffInDays = diffInTime / (1000 * 3600 * 24);
+
+        if (timeRange === 'day') return diffInDays <= 1;
+        if (timeRange === 'week') return diffInDays <= 7;
+        if (timeRange === 'month') return diffInDays <= 30;
+        if (timeRange === 'year') return diffInDays <= 365;
+
+        return true;
+      });
+
       let openCount = 0;
       let inProgressCount = 0;
       let completedCount = 0;
       const locationMap = {};
 
-      issues.forEach((item) => {
+      filteredIssues.forEach((item) => {
         const status = (item.status || 'Open').toLowerCase();
         if (status === 'completed' || status === 'complete') completedCount++;
         else if (status === 'in progress') inProgressCount++;
@@ -43,7 +61,7 @@ export default function DashboardAnalytics() {
       });
 
       setStats({
-        total: issues.length,
+        total: filteredIssues.length,
         open: openCount,
         inProgress: inProgressCount,
         completed: completedCount,
@@ -62,7 +80,12 @@ export default function DashboardAnalytics() {
       setLocationData(sortedLocations);
     }
     setLoading(false);
-  };
+  }, [timeRange]);
+
+  // 2. Jalankan fungsi setiap kali timeRange bertukar
+  useEffect(() => {
+    fetchAnalyticsData();
+  }, [fetchAnalyticsData]);
 
   const displayedLocationData = showAllLocations ? locationData : locationData.slice(0, 20);
   const chartWidth = showAllLocations ? Math.max(1000, locationData.length * 45) : '100%';
@@ -70,9 +93,34 @@ export default function DashboardAnalytics() {
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Arial, sans-serif', backgroundColor: '#f4f6f9', minHeight: '100vh' }}>
       
-      {/* Header Bar */}
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px', backgroundColor: '#0d3b66', padding: '15px 20px', borderRadius: '8px', color: '#fff' }}>
-        <h2 style={{ margin: 0, fontSize: '22px', textAlign: 'center' }}>Dashboard Analytics</h2>
+      {/* Header Bar dengan Penapis Masa */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', backgroundColor: '#0d3b66', padding: '15px 20px', borderRadius: '8px', color: '#fff', flexWrap: 'wrap', gap: '10px' }}>
+        <h2 style={{ margin: 0, fontSize: '22px' }}>Dashboard Analytics</h2>
+        
+        {/* Dropdown Filter By */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Filter By:</label>
+          <select 
+            value={timeRange} 
+            onChange={(e) => setTimeRange(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '5px',
+              border: 'none',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              color: '#0d3b66',
+              backgroundColor: '#fff',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="all">All Time</option>
+            <option value="day">Today (24 Hours)</option>
+            <option value="week">This Week (7 Days)</option>
+            <option value="month">This Month (30 Days)</option>
+            <option value="year">This Year (365 Days)</option>
+          </select>
+        </div>
       </div>
 
       {loading ? (

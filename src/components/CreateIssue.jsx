@@ -186,7 +186,7 @@ export default function CreateIssue({ onBackToDashboard }) {
             style={{ width: '100%', padding: '8px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
           />
           <small style={{ color: '#666', display: 'block', marginTop: '4px' }}>
-            Supported formats: Images, Videos, PDF, DOC, DOCX
+            Max: 50 MB
           </small>
         </div>
 
