@@ -389,7 +389,7 @@ export default function IssueList({ onBackToDashboard }) {
                   rows="3"
                   value={progressNote}
                   onChange={(e) => setProgressNote(e.target.value)}
-                  placeholder="E.g., Replacement part ordered..."
+                  placeholder="Enter progress notes or updates here..."
                   style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', boxSizing: 'border-box' }}
                 />
               </div>
