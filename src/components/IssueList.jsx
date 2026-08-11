@@ -38,8 +38,11 @@ export default function IssueList({ onBackToDashboard }) {
 
   // Delete Issue Function
   const handleDeleteIssue = async (issueId, issueTitle) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete the issue "${issueTitle || 'this issue'}"?`);
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${issueTitle || 'this issue'}"?`);
     if (!confirmDelete) return;
+
+    // Optimistic UI Update
+    setIssues((prevIssues) => prevIssues.filter((item) => item.id !== issueId));
 
     const { error } = await supabase
       .from('issues')
@@ -47,10 +50,10 @@ export default function IssueList({ onBackToDashboard }) {
       .eq('id', issueId);
 
     if (error) {
-      alert('Failed to delete issue: ' + error.message);
+      alert('Failed to delete issue from database: ' + error.message);
+      fetchIssues();
     } else {
       alert('Issue deleted successfully!');
-      fetchIssues();
     }
   };
 
@@ -58,7 +61,6 @@ export default function IssueList({ onBackToDashboard }) {
   const formatDateTime = (dateTimeStr) => {
     if (!dateTimeStr) return '-';
     
-    // Asingkan tarikh dan masa berasaskan ruang atau huruf 'T'
     const cleanStr = dateTimeStr.replace('T', ' ');
     const [datePart, timePart] = cleanStr.split(' ');
 
@@ -74,7 +76,7 @@ export default function IssueList({ onBackToDashboard }) {
         if (!isNaN(hours)) {
           const ampm = hours >= 12 ? 'PM' : 'AM';
           hours = hours % 12;
-          hours = hours ? hours : 12; // Tukar 0 kepada 12
+          hours = hours ? hours : 12;
           formattedTime = `, ${hours}:${minutes} ${ampm}`;
         }
       }
@@ -127,6 +129,8 @@ export default function IssueList({ onBackToDashboard }) {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = 
       (issue.what_issue && issue.what_issue.toLowerCase().includes(searchLower)) ||
+      (issue.description && issue.description.toLowerCase().includes(searchLower)) ||
+      (issue.classification && issue.classification.toLowerCase().includes(searchLower)) ||
       (issue.staff_id && issue.staff_id.toLowerCase().includes(searchLower)) ||
       (issue.location && issue.location.toLowerCase().includes(searchLower)) ||
       (issue.pic && issue.pic.toLowerCase().includes(searchLower));
@@ -253,7 +257,6 @@ export default function IssueList({ onBackToDashboard }) {
             const statusColor = isCompleted ? '#28a745' : issue.status === 'In Progress' ? '#ffc107' : '#dc3545';
             const textColor = issue.status === 'In Progress' ? '#000' : '#fff';
 
-            // Mengambil terus string raw date_time tanpa convert timezone
             const manualDate = issue.date_time || issue.created_at;
 
             return (
@@ -271,13 +274,36 @@ export default function IssueList({ onBackToDashboard }) {
                 }}
               >
                 <div>
-                  <div style={{ fontSize: '11px', color: '#666', fontWeight: 'bold', marginBottom: '8px', borderBottom: '1px solid #eee', paddingBottom: '4px' }}>
-                    📅 Date: {formatDateTime(manualDate)}
+                  {/* Sebaris: Date (Kiri) & Classification Badge (Kanan) */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid #eee', paddingBottom: '6px' }}>
+                    <span style={{ fontSize: '11px', color: '#666', fontWeight: 'bold' }}>
+                      📅 Date: {formatDateTime(manualDate)}
+                    </span>
+
+                    {issue.classification && (
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        color: '#0d3b66',
+                        backgroundColor: '#e2e8f0',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        border: '1px solid #cbd5e1'
+                      }}>
+                        🏷️ Class: {issue.classification}
+                      </span>
+                    )}
                   </div>
 
-                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#0d3b66', marginBottom: '10px', textTransform: 'capitalize' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#0d3b66', marginBottom: '6px', textTransform: 'capitalize' }}>
                     {issue.what_issue || 'Untitled Issue'}
                   </div>
+
+                  {issue.description && (
+                    <div style={{ fontSize: '12px', color: '#555', backgroundColor: '#f1f5f9', padding: '6px 8px', borderRadius: '4px', marginBottom: '10px' }}>
+                      📝 <b>Desc:</b> {issue.description}
+                    </div>
+                  )}
 
                   <div style={{ fontSize: '12px', color: '#444', display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '12px' }}>
                     <div>🆔 <b>Staff ID:</b> {issue.staff_id || '-'}</div>
@@ -286,7 +312,7 @@ export default function IssueList({ onBackToDashboard }) {
                     <div>🎯 <b>Est. Closing:</b> {formatDateOnly(issue.estimated_closing)}</div>
 
                     {issue.progress_note && (
-                      <div style={{ fontStyle: 'italic', color: '#555', backgroundColor: '#f9f9f9', padding: '6px 8px', borderRadius: '4px', marginTop: '4px', fontSize: '11px' }}>
+                      <div style={{ fontStyle: 'italic', color: '#555', backgroundColor: '#fff9e6', borderLeft: '3px solid #ffc107', padding: '6px 8px', borderRadius: '4px', marginTop: '4px', fontSize: '11px' }}>
                         💬 <b>Progress:</b> {issue.progress_note}
                       </div>
                     )}
