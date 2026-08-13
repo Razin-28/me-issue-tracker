@@ -90,7 +90,7 @@ export default function App() {
           <div className="hero-card">
             <div className="hero-title">
               <h1>Manufacturing Engineering</h1>
-              <h2>ISSUE TRACKER</h2>
+              <h2>DATA TRACKER</h2>
             </div>
 
             <div className="user-profile">
