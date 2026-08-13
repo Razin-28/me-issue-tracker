@@ -6,7 +6,7 @@ export default function LandingPage({ onGoToLogin }) {
     <div className="embed-landing-container">
       {/* Poster Rekaan Anda */}
       <img 
-        src="/poster.png" 
+        src="/Homepage.png" 
         alt="Proton ME Issue Tracking System" 
         className="poster-image" 
       />
