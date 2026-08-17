@@ -41,7 +41,6 @@ export default function IssueList({ onBackToDashboard }) {
     const confirmDelete = window.confirm(`Are you sure you want to delete "${issueTitle || 'this issue'}"?`);
     if (!confirmDelete) return;
 
-    // Optimistic UI Update
     setIssues((prevIssues) => prevIssues.filter((item) => item.id !== issueId));
 
     const { error } = await supabase
@@ -57,7 +56,6 @@ export default function IssueList({ onBackToDashboard }) {
     }
   };
 
-  // Format Tarikh & Masa dengan cara memotong string terus (Bypass UTC Offset)
   const formatDateTime = (dateTimeStr) => {
     if (!dateTimeStr) return '-';
     
@@ -87,7 +85,6 @@ export default function IssueList({ onBackToDashboard }) {
     return dateTimeStr;
   };
 
-  // Format Date Only (DD/MM/YY)
   const formatDateOnly = (dateStr) => {
     if (!dateStr) return '-';
     const dateOnlyPart = dateStr.split('T')[0].split(' ')[0];
@@ -124,15 +121,18 @@ export default function IssueList({ onBackToDashboard }) {
     setUpdating(false);
   };
 
-  // Filter issues based on Search, Status & Date
+  // Filter issues including Group name
   const filteredIssues = issues.filter((issue) => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = 
       (issue.what_issue && issue.what_issue.toLowerCase().includes(searchLower)) ||
       (issue.description && issue.description.toLowerCase().includes(searchLower)) ||
+      (issue.group_name && issue.group_name.toLowerCase().includes(searchLower)) ||
       (issue.classification && issue.classification.toLowerCase().includes(searchLower)) ||
+      (issue.staff_name && issue.staff_name.toLowerCase().includes(searchLower)) ||
       (issue.staff_id && issue.staff_id.toLowerCase().includes(searchLower)) ||
       (issue.location && issue.location.toLowerCase().includes(searchLower)) ||
+      (issue.pic_name && issue.pic_name.toLowerCase().includes(searchLower)) ||
       (issue.pic && issue.pic.toLowerCase().includes(searchLower));
 
     let matchesStatus = true;
@@ -176,7 +176,7 @@ export default function IssueList({ onBackToDashboard }) {
           <span style={{ fontSize: '16px' }}>🔍</span>
           <input 
             type="text" 
-            placeholder="Search..." 
+            placeholder="Search issue, group, name, location, PIC..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
@@ -306,9 +306,10 @@ export default function IssueList({ onBackToDashboard }) {
                   )}
 
                   <div style={{ fontSize: '12px', color: '#444', display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '12px' }}>
-                    <div>🆔 <b>Staff ID:</b> {issue.staff_id || '-'}</div>
+                    <div>👥 <b>Group:</b> {issue.group_name || '-'}</div>
+                    <div>👤 <b>Name:</b> {issue.staff_name || issue.staff_id || '-'}</div>
                     <div>📍 <b>Location:</b> {issue.location || '-'}</div>
-                    <div>👤 <b>PIC:</b> {issue.pic || '-'}</div>
+                    <div>👤 <b>PIC:</b> {issue.pic_name || issue.pic || '-'}</div>
                     <div>🎯 <b>Est. Closing:</b> {formatDateOnly(issue.estimated_closing)}</div>
 
                     {issue.progress_note && (
@@ -357,7 +358,7 @@ export default function IssueList({ onBackToDashboard }) {
                         padding: '5px 8px', 
                         borderRadius: '4px', 
                         fontSize: '11px', 
-                        fontWeight: 'bold',
+                        fontWeight: 'bold', 
                         color: '#333'
                       }}
                     >
@@ -369,7 +370,7 @@ export default function IssueList({ onBackToDashboard }) {
                       style={{ 
                         border: 'none', 
                         backgroundColor: '#dc3545', 
-                        color: '#fff',
+                        color: '#fff', 
                         cursor: 'pointer', 
                         padding: '5px 8px', 
                         borderRadius: '4px', 

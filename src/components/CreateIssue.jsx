@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 
-export default function CreateIssue({ onBackToDashboard }) {
+export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
   const [whatIssue, setWhatIssue] = useState('');
   const [description, setDescription] = useState('');
+  const [groupName, setGroupName] = useState('');
   const [location, setLocation] = useState('');
   const [pic, setPic] = useState('');
   const [dateTime, setDateTime] = useState('');
@@ -20,11 +21,12 @@ export default function CreateIssue({ onBackToDashboard }) {
       // Dapatkan data pengguna yang sedang log masuk
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Ambil Staff ID secara automatik dari metadata akaun atau e-mel
-      const autoStaffId = user?.user_metadata?.staff_id || 
-                          user?.user_metadata?.username || 
-                          user?.email?.split('@')[0] || 
-                          '-';
+      const autoStaffName = user?.user_metadata?.full_name || 
+                            user?.user_metadata?.name || 
+                            user?.email?.split('@')[0] || 
+                            'Staff';
+
+      const staffEmail = user?.email || null;
 
       let fileUrl = null;
 
@@ -53,12 +55,16 @@ export default function CreateIssue({ onBackToDashboard }) {
         {
           what_issue: whatIssue,
           description: description,
+          group_name: groupName, // Medan Group
           location: location,
           pic: pic,
+          pic_name: pic,
+          pic_email: staffEmail,
           date_time: dateTime || null,
           classification: classification,
           estimated_closing: estimatedClosing,
-          staff_id: autoStaffId, // Disimpan secara automatik tanpa perlu diisi
+          staff_name: autoStaffName,
+          staff_id: user?.user_metadata?.staff_id || null,
           file_url: fileUrl,
           user_id: user ? user.id : null,
           status: 'Open',
@@ -70,7 +76,10 @@ export default function CreateIssue({ onBackToDashboard }) {
       }
 
       alert('Issue submitted successfully!');
-      if (onBackToDashboard) {
+      
+      if (onIssueCreated) {
+        onIssueCreated();
+      } else if (onBackToDashboard) {
         onBackToDashboard();
       }
     } catch (error) {
@@ -112,6 +121,19 @@ export default function CreateIssue({ onBackToDashboard }) {
           />
         </div>
 
+        {/* Group */}
+        <div>
+          <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Group:</label>
+          <input 
+            type="text" 
+            value={groupName} 
+            onChange={(e) => setGroupName(e.target.value)} 
+            required
+            placeholder="Enter Group (e.g. Line 1, Assembly, Machining)" 
+            style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
+          />
+        </div>
+
         {/* Location / Station */}
         <div>
           <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Location / Station:</label>
@@ -133,7 +155,7 @@ export default function CreateIssue({ onBackToDashboard }) {
             value={pic} 
             onChange={(e) => setPic(e.target.value)} 
             required 
-            placeholder="Enter PIC"
+            placeholder="Enter PIC (e.g. Ikhwan ME)"
             style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
           />
         </div>
@@ -193,7 +215,17 @@ export default function CreateIssue({ onBackToDashboard }) {
         <button 
           type="submit" 
           disabled={loading}
-          style={{ padding: '12px', backgroundColor: '#0d3b66', color: '#fff', border: 'none', borderRadius: '5px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', marginTop: '10px' }}
+          style={{ 
+            padding: '12px', 
+            backgroundColor: '#0d3b66', 
+            color: '#fff', 
+            border: 'none', 
+            borderRadius: '5px', 
+            fontWeight: 'bold', 
+            fontSize: '16px', 
+            cursor: 'pointer', 
+            marginTop: '10px' 
+          }}
         >
           {loading ? 'Submitting...' : 'Submit Issue'}
         </button>

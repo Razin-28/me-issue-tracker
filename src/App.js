@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import { supabase } from './supabaseClient';
+import LandingPage from './components/LandingPage';
 import Auth from './components/Auth';
 import CreateIssue from './components/CreateIssue';
 import IssueList from './components/IssueList';
 import TagMapUpdates from './components/TagMap';
-import DashboardAnalytics from './components/DashboardAnalytics'; // Import komponen Analytics
+import DashboardAnalytics from './components/DashboardAnalytics';
 
 export default function App() {
   const [session, setSession] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [activeTab, setActiveTab] = useState('home');
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
@@ -23,8 +25,12 @@ export default function App() {
     // 2. Dengar perubahan status auth (Login / Logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) fetchProfile(session.user.id);
-      else setUserProfile(null);
+      if (session) {
+        fetchProfile(session.user.id);
+        setShowAuthModal(false);
+      } else {
+        setUserProfile(null);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -40,8 +46,10 @@ export default function App() {
     if (data) setUserProfile(data);
   };
 
-  const handleLogout = () => {
-    supabase.auth.signOut();
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setActiveTab('home');
+    setShowAuthModal(false);
   };
 
   const handleIssueCreated = () => {
@@ -49,22 +57,44 @@ export default function App() {
     setActiveTab('list');
   };
 
+  // 1. JIKA BELUM LOGIN: Paparkan Landing Page atau Modal Login/Register
   if (!session) {
-    return <Auth />;
+    if (showAuthModal) {
+      return (
+        <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f9', padding: '20px' }}>
+          <button
+            onClick={() => setShowAuthModal(false)}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '5px',
+              border: '1px solid #0d3b66',
+              background: '#fff',
+              color: '#0d3b66',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              marginBottom: '20px'
+            }}
+          >
+            ⬅️ Back to Landing Page
+          </button>
+          <Auth onLoginSuccess={() => setShowAuthModal(false)} />
+        </div>
+      );
+    }
+    return <LandingPage onGoToLogin={() => setShowAuthModal(true)} />;
   }
 
-  // Dapatkan nama secara dinamik dari profile atau metadata pendaftaran
+  // 2. JIKA SUDAH LOGIN: Paparkan Dashboard Utama
   const displayName = 
     userProfile?.full_name || 
     session.user?.user_metadata?.full_name || 
     session.user?.user_metadata?.name || 
     'USER';
 
-  // Dapatkan Staff ID dari profile, metadata, atau emel
   const staffIdDisplay = 
     userProfile?.staff_id || 
     session.user?.user_metadata?.staff_id || 
-    (session.user.email ? session.user.email.split('@')[0].toUpperCase() : 'N/A');
+    'STAFF';
 
   return (
     <div className="dashboard-container">
@@ -116,14 +146,12 @@ export default function App() {
             </div>
           </div>
 
-          {/* Navigasi terus ke Dashboard Analytics */}
           <div className="menu-card card-dashboard" onClick={() => setActiveTab('analytics')}>
             <div className="card-overlay">
               <h3>Dashboard Analytics</h3>
             </div>
           </div>
 
-          {/* Navigasi terus ke TagMap Updates */}
           <div className="menu-card card-escalate" onClick={() => setActiveTab('tagmap')}>
             <div className="card-overlay">
               <h3>TagMap Updates</h3>
@@ -137,7 +165,8 @@ export default function App() {
         <div>
           <h2>Add New Issue</h2>
           <CreateIssue 
-            userProfile={{ id: session.user.id, department: userProfile?.department || 'ME' }} 
+            userProfile={{ id: session.user.id, department: userProfile?.department || 'ME', staff_id: staffIdDisplay }} 
+            onBackToDashboard={() => setActiveTab('home')}
             onIssueCreated={handleIssueCreated} 
           />
         </div>
