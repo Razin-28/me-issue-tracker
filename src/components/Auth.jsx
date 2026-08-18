@@ -25,7 +25,7 @@ export default function Auth({ onLoginSuccess }) {
       if (isSignUp) {
         // Validation for Department Code (Must be 'ME')
         if (departmentCode.trim().toUpperCase() !== 'ME') {
-          setErrorMessage('Invalid Department Code! The department passcode must be ME.');
+          setErrorMessage('Invalid Department Code!');
           setLoading(false);
           return;
         }
