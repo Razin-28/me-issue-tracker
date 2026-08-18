@@ -5,9 +5,10 @@ export default function IssueList({ onBackToDashboard }) {
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // State for Search, Status Filter & Date Filter
+  // State for Search, Filters (Status, Classification, Date)
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [classificationFilter, setClassificationFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('');
 
   // State for progress update modal
@@ -35,6 +36,11 @@ export default function IssueList({ onBackToDashboard }) {
   useEffect(() => {
     fetchIssues();
   }, []);
+
+  // Senarai unik Classification secara automatik daripada data
+  const uniqueClassifications = Array.from(
+    new Set(issues.map((item) => item.classification).filter(Boolean))
+  );
 
   // Delete Issue Function
   const handleDeleteIssue = async (issueId, issueTitle) => {
@@ -121,7 +127,7 @@ export default function IssueList({ onBackToDashboard }) {
     setUpdating(false);
   };
 
-  // Filter issues including Group name
+  // Filter issues based on Search, Status, Classification, and Date
   const filteredIssues = issues.filter((issue) => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = 
@@ -144,6 +150,11 @@ export default function IssueList({ onBackToDashboard }) {
       }
     }
 
+    let matchesClassification = true;
+    if (classificationFilter !== 'All') {
+      matchesClassification = issue.classification === classificationFilter;
+    }
+
     let matchesDate = true;
     if (dateFilter) {
       const issueDateStr = issue.date_time || issue.created_at;
@@ -157,7 +168,7 @@ export default function IssueList({ onBackToDashboard }) {
       matchesDate = (issueFormattedDate === dateFilter) || (estClosingFormattedDate === dateFilter);
     }
 
-    return matchesSearch && matchesStatus && matchesDate;
+    return matchesSearch && matchesStatus && matchesClassification && matchesDate;
   });
 
   return (
@@ -198,6 +209,30 @@ export default function IssueList({ onBackToDashboard }) {
           )}
         </div>
 
+        {/* Classification Filter */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#333' }}>🏷️ Class:</span>
+          <select
+            value={classificationFilter}
+            onChange={(e) => setClassificationFilter(e.target.value)}
+            style={{
+              padding: '6px 10px',
+              borderRadius: '5px',
+              border: '1px solid #ccc',
+              fontSize: '12px',
+              backgroundColor: '#fff',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="All">All Classes</option>
+            {uniqueClassifications.map((cls) => (
+              <option key={cls} value={cls}>
+                {cls}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* Date Filter */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#333' }}>📅 Date:</span>
@@ -209,7 +244,7 @@ export default function IssueList({ onBackToDashboard }) {
           />
           {dateFilter && (
             <button 
-              onClick={() => setDateFilter('')}
+              onClick={() => setDateFilter('')} 
               style={{ border: 'none', backgroundColor: '#dc3545', color: '#fff', borderRadius: '4px', padding: '4px 8px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
             >
               Clear
@@ -219,7 +254,7 @@ export default function IssueList({ onBackToDashboard }) {
 
         {/* Status Filter */}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#333' }}>Filter:</span>
+          <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#333' }}>Status:</span>
           {['All', 'Open', 'In Progress', 'Completed'].map((status) => {
             const isActive = statusFilter === status;
             return (
@@ -268,8 +303,8 @@ export default function IssueList({ onBackToDashboard }) {
                   borderRadius: '6px', 
                   padding: '14px', 
                   boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                  display: 'flex',
-                  flexDirection: 'column',
+                  display: 'flex', 
+                  flexDirection: 'column', 
                   justifyContent: 'space-between'
                 }}
               >
