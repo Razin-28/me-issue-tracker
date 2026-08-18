@@ -23,14 +23,14 @@ export default function Auth({ onLoginSuccess }) {
 
     try {
       if (isSignUp) {
-        // Semakan kata laluan Department Code (Wajib 'ME')
+        // Validation for Department Code (Must be 'ME')
         if (departmentCode.trim().toUpperCase() !== 'ME') {
-          setErrorMessage('Department Code tidak sah! Kata laluan department code mestilah ME.');
+          setErrorMessage('Invalid Department Code! The department passcode must be ME.');
           setLoading(false);
           return;
         }
 
-        // Pendaftaran Pengguna Baru
+        // New User Registration
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password: password,
@@ -46,16 +46,16 @@ export default function Auth({ onLoginSuccess }) {
         if (error) throw error;
 
         if (data?.user && data?.user?.identities?.length === 0) {
-          setErrorMessage('E-mel ini sudah pun didaftarkan. Sila log masuk.');
+          setErrorMessage('This email is already registered. Please log in.');
         } else {
-          setSuccessMessage('Pendaftaran berjaya! Sila log masuk dengan akaun anda.');
+          setSuccessMessage('Registration successful! Please log in with your credentials.');
           setIsSignUp(false);
           setPassword('');
           setStaffId('');
           setDepartmentCode('');
         }
       } else {
-        // Log Masuk
+        // User Login
         const { data, error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password: password,
@@ -107,28 +107,28 @@ export default function Auth({ onLoginSuccess }) {
         {/* 1. Company Email */}
         <div>
           <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
-            Company Email:
+            Email:
           </label>
           <input
             type="email"
             required
-            placeholder="name@company.com"
+            placeholder="Enter your Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
           />
         </div>
 
-        {/* 2. Full Name (Hanya untuk Registration) */}
+        {/* 2. Full Name (Sign Up Only) */}
         {isSignUp && (
           <div>
             <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
-              Full Name:
+              Name:
             </label>
             <input
               type="text"
               required
-              placeholder="Contoh: MUHAMMAD RAZIN BIN MOHD FAIRUL"
+              placeholder="Enter your Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
@@ -136,7 +136,7 @@ export default function Auth({ onLoginSuccess }) {
           </div>
         )}
 
-        {/* 3. Staff ID (Hanya untuk Registration) */}
+        {/* 3. Staff ID (Sign Up Only) */}
         {isSignUp && (
           <div>
             <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
@@ -145,7 +145,7 @@ export default function Auth({ onLoginSuccess }) {
             <input
               type="text"
               required
-              placeholder="Contoh: ME10234"
+              placeholder="Enter your Staff ID"
               value={staffId}
               onChange={(e) => setStaffId(e.target.value)}
               style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
@@ -161,29 +161,29 @@ export default function Auth({ onLoginSuccess }) {
           <input
             type="password"
             required
-            placeholder="Enter password"
+            placeholder="Enter your Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
           />
         </div>
 
-        {/* 5. Department Code Password (Bawah Sekali) */}
+        {/* 5. Department Code Passcode (Sign Up Only) */}
         {isSignUp && (
           <div>
             <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
-              Department Code Password:
+              Department Code:
             </label>
             <input
               type="text"
               required
-              placeholder="Enter Department Password (ME)"
+              placeholder="Enter Department Code"
               value={departmentCode}
               onChange={(e) => setDepartmentCode(e.target.value)}
               style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
             />
             <small style={{ color: '#666', fontSize: '11px', display: 'block', marginTop: '3px' }}>
-              *Masukkan kod ME untuk pengesahan akses pendaftaran.
+              *Enter the ME code to verify department registration access.
             </small>
           </div>
         )}
