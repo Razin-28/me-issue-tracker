@@ -12,7 +12,7 @@ export default function TagMap({ onBack }) {
   const [tagVersion, setTagVersion] = useState("");
   const [itemChange, setItemChange] = useState("");
 
-  // Ambil rekod dari Supabase
+  // 1. Ambil data dari Supabase
   const fetchTagMapUpdates = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -30,7 +30,7 @@ export default function TagMap({ onBack }) {
     fetchTagMapUpdates();
   }, []);
 
-  // Simpan rekod baharu ke Supabase
+  // 2. Simpan rekod baharu ke Supabase
   const handleAddUpdate = async (e) => {
     e.preventDefault();
 
@@ -59,6 +59,24 @@ export default function TagMap({ onBack }) {
       fetchTagMapUpdates();
     }
     setSubmitting(false);
+  };
+
+  // 3. Padam rekod dari Supabase
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm("Adakah anda pasti mahu memadam rekod ini?");
+    if (!confirmDelete) return;
+
+    const { error } = await supabase
+      .from("tagmap_updates")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      alert("Gagal memadam: " + error.message);
+    } else {
+      // Kemas kini senarai jadual serta-merta
+      setUpdates(updates.filter((item) => item.id !== id));
+    }
   };
 
   return (
@@ -203,7 +221,7 @@ export default function TagMap({ onBack }) {
         </form>
       </div>
 
-      {/* JADUAL PAPARAN DATA (TABLE) */}
+      {/* JADUAL PAPARAN DATA (TABLE DENGAN ACTION DELETE) */}
       <div
         style={{
           backgroundColor: "#ffffff",
@@ -216,23 +234,24 @@ export default function TagMap({ onBack }) {
         <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
           <thead>
             <tr style={{ backgroundColor: "#0c4a6e", color: "#ffffff", fontSize: "14px" }}>
-              <th style={{ padding: "14px 18px", width: "60px", textAlign: "center" }}>No.</th>
-              <th style={{ padding: "14px 18px", width: "140px" }}>Date</th>
-              <th style={{ padding: "14px 18px", width: "200px" }}>Requestor</th>
-              <th style={{ padding: "14px 18px", width: "160px" }}>Tag. Version</th>
+              <th style={{ padding: "14px 18px", width: "50px", textAlign: "center" }}>No.</th>
+              <th style={{ padding: "14px 18px", width: "130px" }}>Date</th>
+              <th style={{ padding: "14px 18px", width: "180px" }}>Requestor</th>
+              <th style={{ padding: "14px 18px", width: "140px" }}>Tag. Version</th>
               <th style={{ padding: "14px 18px" }}>Item Change</th>
+              <th style={{ padding: "14px 18px", width: "90px", textAlign: "center" }}>Action</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="5" style={{ padding: "30px", textAlign: "center", color: "#64748b" }}>
+                <td colSpan="6" style={{ padding: "30px", textAlign: "center", color: "#64748b" }}>
                   Loading updates...
                 </td>
               </tr>
             ) : updates.length === 0 ? (
               <tr>
-                <td colSpan="5" style={{ padding: "30px", textAlign: "center", color: "#64748b" }}>
+                <td colSpan="6" style={{ padding: "30px", textAlign: "center", color: "#64748b" }}>
                   No TagMap updates available.
                 </td>
               </tr>
@@ -244,6 +263,24 @@ export default function TagMap({ onBack }) {
                   <td style={{ padding: "14px 18px", color: "#0f172a", fontWeight: "600" }}>{item.requestor}</td>
                   <td style={{ padding: "14px 18px", color: "#0284c7", fontWeight: "bold" }}>{item.tag_version}</td>
                   <td style={{ padding: "14px 18px", color: "#334155" }}>{item.item_change}</td>
+                  <td style={{ padding: "14px 18px", textAlign: "center" }}>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      style={{
+                        backgroundColor: "#fee2e2",
+                        color: "#dc2626",
+                        border: "1px solid #fecaca",
+                        padding: "5px 12px",
+                        borderRadius: "5px",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                      }}
+                      title="Padam rekod ini"
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
