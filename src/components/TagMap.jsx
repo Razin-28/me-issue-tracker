@@ -195,7 +195,7 @@ export default function TagMap({ onBack }) {
                 Date
               </label>
               <input
-                type="Enter Date"
+                type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 style={{ width: "100%", padding: "9px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", boxSizing: "border-box" }}
