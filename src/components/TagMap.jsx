@@ -6,7 +6,8 @@ export default function TagMap({ onBack }) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Form input state
+  // State untuk form input
+  const [editingId, setEditingId] = useState(null); // ID rekod yang sedang diedit (null jika mod tambah baharu)
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [requestor, setRequestor] = useState("");
   const [tagVersion, setTagVersion] = useState("");
@@ -31,8 +32,28 @@ export default function TagMap({ onBack }) {
     fetchTagMapUpdates();
   }, []);
 
-  // 2. Insert new record into Supabase
-  const handleAddUpdate = async (e) => {
+  // Reset borang ke keadaan asal
+  const resetForm = () => {
+    setEditingId(null);
+    setDate(new Date().toISOString().split("T")[0]);
+    setRequestor("");
+    setTagVersion("");
+    setItemChange("");
+  };
+
+  // 2. Masuk ke mod Edit
+  const handleEdit = (item) => {
+    setEditingId(item.id);
+    setDate(item.date);
+    setRequestor(item.requestor);
+    setTagVersion(item.tag_version);
+    setItemChange(item.item_change);
+    // Skrol perlahan ke atas untuk terus edit
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // 3. Simpan rekod (Tambah Baharu ATAU Kemas Kini)
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!requestor.trim() || !tagVersion.trim() || !itemChange.trim()) {
@@ -41,28 +62,43 @@ export default function TagMap({ onBack }) {
     }
 
     setSubmitting(true);
-    const newRecord = {
+    const payload = {
       date: date,
       requestor: requestor.trim(),
       tag_version: tagVersion.trim(),
       item_change: itemChange.trim(),
     };
 
-    const { error } = await supabase.from("tagmap_updates").insert([newRecord]);
+    if (editingId) {
+      // Mod UPDATE
+      const { error } = await supabase
+        .from("tagmap_updates")
+        .update(payload)
+        .eq("id", editingId);
 
-    if (error) {
-      alert("Failed to save: " + error.message);
+      if (error) {
+        alert("Failed to update: " + error.message);
+      } else {
+        resetForm();
+        fetchTagMapUpdates();
+      }
     } else {
-      setRequestor("");
-      setTagVersion("");
-      setItemChange("");
-      setDate(new Date().toISOString().split("T")[0]);
-      fetchTagMapUpdates();
+      // Mod INSERT
+      const { error } = await supabase
+        .from("tagmap_updates")
+        .insert([payload]);
+
+      if (error) {
+        alert("Failed to save: " + error.message);
+      } else {
+        resetForm();
+        fetchTagMapUpdates();
+      }
     }
     setSubmitting(false);
   };
 
-  // 3. Delete record from Supabase
+  // 4. Delete record from Supabase
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this record?");
     if (!confirmDelete) return;
@@ -75,6 +111,7 @@ export default function TagMap({ onBack }) {
     if (error) {
       alert("Failed to delete: " + error.message);
     } else {
+      if (editingId === id) resetForm();
       setUpdates(updates.filter((item) => item.id !== id));
     }
   };
@@ -121,7 +158,7 @@ export default function TagMap({ onBack }) {
         TagMap Updates
       </div>
 
-      {/* Input Form */}
+      {/* Input / Edit Form */}
       <div
         style={{
           backgroundColor: "#ffffff",
@@ -129,13 +166,22 @@ export default function TagMap({ onBack }) {
           borderRadius: "8px",
           boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
           marginBottom: "24px",
-          border: "1px solid #e2e8f0",
+          border: editingId ? "2px solid #0284c7" : "1px solid #e2e8f0",
         }}
       >
-        <h4 style={{ margin: "0 0 16px 0", color: "#0c4a6e", display: "flex", alignItems: "center", gap: "6px" }}>
-          <span style={{ fontSize: "18px" }}>➕</span> Add New TagMap Update
-        </h4>
-        <form onSubmit={handleAddUpdate}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+          <h4 style={{ margin: 0, color: "#0c4a6e", display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ fontSize: "18px" }}>{editingId ? "✏️" : "➕"}</span>
+            {editingId ? "Edit TagMap Update" : "Add New TagMap Update"}
+          </h4>
+          {editingId && (
+            <span style={{ fontSize: "12px", color: "#0284c7", fontWeight: "600", backgroundColor: "#e0f2fe", padding: "4px 8px", borderRadius: "4px" }}>
+              Editing Mode
+            </span>
+          )}
+        </div>
+
+        <form onSubmit={handleSubmit}>
           <div
             style={{
               display: "grid",
@@ -200,12 +246,29 @@ export default function TagMap({ onBack }) {
             </div>
           </div>
 
-          <div style={{ textAlign: "right" }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+            {editingId && (
+              <button
+                type="button"
+                onClick={resetForm}
+                style={{
+                  backgroundColor: "#f1f5f9",
+                  color: "#475569",
+                  border: "1px solid #cbd5e1",
+                  padding: "10px 18px",
+                  borderRadius: "6px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+            )}
             <button
               type="submit"
               disabled={submitting}
               style={{
-                backgroundColor: "#0284c7",
+                backgroundColor: editingId ? "#0284c7" : "#0284c7",
                 color: "#ffffff",
                 border: "none",
                 padding: "10px 24px",
@@ -215,7 +278,7 @@ export default function TagMap({ onBack }) {
                 boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
               }}
             >
-              {submitting ? "Saving..." : "Submit Record"}
+              {submitting ? "Saving..." : editingId ? "Update Record" : "Submit Record"}
             </button>
           </div>
         </form>
@@ -239,7 +302,7 @@ export default function TagMap({ onBack }) {
               <th style={{ padding: "14px 18px", width: "180px" }}>Requestor</th>
               <th style={{ padding: "14px 18px", width: "140px" }}>Tag. Version</th>
               <th style={{ padding: "14px 18px" }}>Item Change</th>
-              <th style={{ padding: "14px 18px", width: "90px", textAlign: "center" }}>Action</th>
+              <th style={{ padding: "14px 18px", width: "140px", textAlign: "center" }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -257,29 +320,53 @@ export default function TagMap({ onBack }) {
               </tr>
             ) : (
               updates.map((item, index) => (
-                <tr key={item.id || index} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                <tr
+                  key={item.id || index}
+                  style={{
+                    borderBottom: "1px solid #f1f5f9",
+                    backgroundColor: editingId === item.id ? "#f0f9ff" : "transparent",
+                  }}
+                >
                   <td style={{ padding: "14px 18px", textAlign: "center", color: "#64748b" }}>{index + 1}</td>
                   <td style={{ padding: "14px 18px", color: "#334155" }}>{item.date}</td>
                   <td style={{ padding: "14px 18px", color: "#0f172a", fontWeight: "600" }}>{item.requestor}</td>
                   <td style={{ padding: "14px 18px", color: "#0284c7", fontWeight: "bold" }}>{item.tag_version}</td>
                   <td style={{ padding: "14px 18px", color: "#334155" }}>{item.item_change}</td>
                   <td style={{ padding: "14px 18px", textAlign: "center" }}>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      style={{
-                        backgroundColor: "#fee2e2",
-                        color: "#dc2626",
-                        border: "1px solid #fecaca",
-                        padding: "5px 12px",
-                        borderRadius: "5px",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                      }}
-                      title="Delete this record"
-                    >
-                      Delete
-                    </button>
+                    <div style={{ display: "flex", justifyContent: "center", gap: "6px" }}>
+                      <button
+                        onClick={() => handleEdit(item)}
+                        style={{
+                          backgroundColor: "#e0f2fe",
+                          color: "#0369a1",
+                          border: "1px solid #bae6fd",
+                          padding: "5px 10px",
+                          borderRadius: "5px",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                        }}
+                        title="Edit this record"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        style={{
+                          backgroundColor: "#fee2e2",
+                          color: "#dc2626",
+                          border: "1px solid #fecaca",
+                          padding: "5px 10px",
+                          borderRadius: "5px",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                        }}
+                        title="Delete this record"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
