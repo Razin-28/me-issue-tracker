@@ -6,19 +6,20 @@ export default function TagMap({ onBack }) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // State untuk borang input
+  // Form input state
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [requestor, setRequestor] = useState("");
   const [tagVersion, setTagVersion] = useState("");
   const [itemChange, setItemChange] = useState("");
 
-  // 1. Ambil data dari Supabase
+  // 1. Fetch data from Supabase (Sorted by date descending)
   const fetchTagMapUpdates = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("tagmap_updates")
       .select("*")
-      .order("date", { ascending: false });
+      .order("date", { ascending: false })
+      .order("created_at", { ascending: false });
 
     if (!error && data) {
       setUpdates(data);
@@ -30,12 +31,12 @@ export default function TagMap({ onBack }) {
     fetchTagMapUpdates();
   }, []);
 
-  // 2. Simpan rekod baharu ke Supabase
+  // 2. Insert new record into Supabase
   const handleAddUpdate = async (e) => {
     e.preventDefault();
 
     if (!requestor.trim() || !tagVersion.trim() || !itemChange.trim()) {
-      alert("Sila lengkapkan semua ruangan.");
+      alert("Please complete all fields.");
       return;
     }
 
@@ -50,7 +51,7 @@ export default function TagMap({ onBack }) {
     const { error } = await supabase.from("tagmap_updates").insert([newRecord]);
 
     if (error) {
-      alert("Ralat menyimpan: " + error.message);
+      alert("Failed to save: " + error.message);
     } else {
       setRequestor("");
       setTagVersion("");
@@ -61,9 +62,9 @@ export default function TagMap({ onBack }) {
     setSubmitting(false);
   };
 
-  // 3. Padam rekod dari Supabase
+  // 3. Delete record from Supabase
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm("Adakah anda pasti mahu memadam rekod ini?");
+    const confirmDelete = window.confirm("Are you sure you want to delete this record?");
     if (!confirmDelete) return;
 
     const { error } = await supabase
@@ -72,16 +73,15 @@ export default function TagMap({ onBack }) {
       .eq("id", id);
 
     if (error) {
-      alert("Gagal memadam: " + error.message);
+      alert("Failed to delete: " + error.message);
     } else {
-      // Kemas kini senarai jadual serta-merta
       setUpdates(updates.filter((item) => item.id !== id));
     }
   };
 
   return (
     <div style={{ padding: "24px 32px", backgroundColor: "#f8fafc", minHeight: "100vh", fontFamily: "Arial, sans-serif" }}>
-      {/* Top Bar / Navigation */}
+      {/* Top Navigation */}
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
         {onBack && (
           <button
@@ -121,7 +121,7 @@ export default function TagMap({ onBack }) {
         TagMap Updates
       </div>
 
-      {/* BORANG INPUT (FORM) */}
+      {/* Input Form */}
       <div
         style={{
           backgroundColor: "#ffffff",
@@ -221,7 +221,7 @@ export default function TagMap({ onBack }) {
         </form>
       </div>
 
-      {/* JADUAL PAPARAN DATA (TABLE DENGAN ACTION DELETE) */}
+      {/* Data Table */}
       <div
         style={{
           backgroundColor: "#ffffff",
@@ -276,7 +276,7 @@ export default function TagMap({ onBack }) {
                         cursor: "pointer",
                         fontSize: "12px",
                       }}
-                      title="Padam rekod ini"
+                      title="Delete this record"
                     >
                       Delete
                     </button>
