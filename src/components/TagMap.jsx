@@ -6,11 +6,15 @@ export default function TagMap({ onBack }) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // State untuk form input
-  const [editingId, setEditingId] = useState(null); // ID rekod yang sedang diedit (null jika mod tambah baharu)
+  // Filter States
+  const [filterDate, setFilterDate] = useState("");
+  const [filterModel, setFilterModel] = useState("All");
+
+  // Form input state
+  const [editingId, setEditingId] = useState(null);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [requestor, setRequestor] = useState("");
-  const [tagVersion, setTagVersion] = useState("");
+  const [tagVersion, setTagVersion] = useState(""); // Stores Model value
   const [itemChange, setItemChange] = useState("");
 
   // 1. Fetch data from Supabase (Sorted by date descending)
@@ -32,7 +36,12 @@ export default function TagMap({ onBack }) {
     fetchTagMapUpdates();
   }, []);
 
-  // Reset borang ke keadaan asal
+  // Unique model list for dropdown filter
+  const uniqueModels = Array.from(
+    new Set(updates.map((item) => item.tag_version).filter(Boolean))
+  );
+
+  // Reset form
   const resetForm = () => {
     setEditingId(null);
     setDate(new Date().toISOString().split("T")[0]);
@@ -41,18 +50,17 @@ export default function TagMap({ onBack }) {
     setItemChange("");
   };
 
-  // 2. Masuk ke mod Edit
+  // 2. Edit mode
   const handleEdit = (item) => {
     setEditingId(item.id);
     setDate(item.date);
     setRequestor(item.requestor);
     setTagVersion(item.tag_version);
     setItemChange(item.item_change);
-    // Skrol perlahan ke atas untuk terus edit
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // 3. Simpan rekod (Tambah Baharu ATAU Kemas Kini)
+  // 3. Save record (Insert or Update)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -70,7 +78,6 @@ export default function TagMap({ onBack }) {
     };
 
     if (editingId) {
-      // Mod UPDATE
       const { error } = await supabase
         .from("tagmap_updates")
         .update(payload)
@@ -83,7 +90,6 @@ export default function TagMap({ onBack }) {
         fetchTagMapUpdates();
       }
     } else {
-      // Mod INSERT
       const { error } = await supabase
         .from("tagmap_updates")
         .insert([payload]);
@@ -98,7 +104,7 @@ export default function TagMap({ onBack }) {
     setSubmitting(false);
   };
 
-  // 4. Delete record from Supabase
+  // 4. Delete record
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this record?");
     if (!confirmDelete) return;
@@ -115,6 +121,16 @@ export default function TagMap({ onBack }) {
       setUpdates(updates.filter((item) => item.id !== id));
     }
   };
+
+  // Filter Logic
+  const filteredUpdates = updates.filter((item) => {
+    const matchesDate = !filterDate || item.date === filterDate;
+    const matchesModel =
+      filterModel === "All" ||
+      (item.tag_version && item.tag_version.toLowerCase() === filterModel.toLowerCase());
+
+    return matchesDate && matchesModel;
+  });
 
   return (
     <div style={{ padding: "24px 32px", backgroundColor: "#f8fafc", minHeight: "100vh", fontFamily: "Arial, sans-serif" }}>
@@ -219,11 +235,11 @@ export default function TagMap({ onBack }) {
 
             <div>
               <label style={{ display: "block", fontSize: "13px", fontWeight: "bold", marginBottom: "6px", color: "#334155" }}>
-                Tag. Version
+                Model
               </label>
               <input
                 type="text"
-                placeholder="Enter Tag Version"
+                placeholder="Enter Model"
                 value={tagVersion}
                 onChange={(e) => setTagVersion(e.target.value)}
                 style={{ width: "100%", padding: "9px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", boxSizing: "border-box" }}
@@ -268,7 +284,7 @@ export default function TagMap({ onBack }) {
               type="submit"
               disabled={submitting}
               style={{
-                backgroundColor: editingId ? "#0284c7" : "#0284c7",
+                backgroundColor: "#0284c7",
                 color: "#ffffff",
                 border: "none",
                 padding: "10px 24px",
@@ -282,6 +298,65 @@ export default function TagMap({ onBack }) {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Filter Bar */}
+      <div
+        style={{
+          backgroundColor: "#ffffff",
+          padding: "14px 20px",
+          borderRadius: "8px",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "16px",
+          alignItems: "center",
+          marginBottom: "16px",
+          border: "1px solid #e2e8f0",
+        }}
+      >
+        {/* Date Filter */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "13px", fontWeight: "bold", color: "#334155" }}>📅 Date:</span>
+          <input
+            type="date"
+            value={filterDate}
+            onChange={(e) => setFilterDate(e.target.value)}
+            style={{ padding: "7px 10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "13px" }}
+          />
+          {filterDate && (
+            <button
+              onClick={() => setFilterDate("")}
+              style={{ border: "none", backgroundColor: "#dc2626", color: "#fff", borderRadius: "4px", padding: "4px 8px", fontSize: "11px", cursor: "pointer", fontWeight: "bold" }}
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        {/* Model Filter Dropdown */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "13px", fontWeight: "bold", color: "#334155" }}>🚗 Model:</span>
+          <select
+            value={filterModel}
+            onChange={(e) => setFilterModel(e.target.value)}
+            style={{
+              padding: "7px 12px",
+              borderRadius: "6px",
+              border: "1px solid #cbd5e1",
+              backgroundColor: "#fff",
+              cursor: "pointer",
+              fontSize: "13px",
+            }}
+          >
+            <option value="All">All Models</option>
+            {uniqueModels.map((mdl) => (
+              <option key={mdl} value={mdl}>
+                {mdl}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Data Table */}
@@ -300,7 +375,7 @@ export default function TagMap({ onBack }) {
               <th style={{ padding: "14px 18px", width: "50px", textAlign: "center" }}>No.</th>
               <th style={{ padding: "14px 18px", width: "130px" }}>Date</th>
               <th style={{ padding: "14px 18px", width: "180px" }}>Requestor</th>
-              <th style={{ padding: "14px 18px", width: "140px" }}>Tag. Version</th>
+              <th style={{ padding: "14px 18px", width: "140px" }}>Model</th>
               <th style={{ padding: "14px 18px" }}>Item Change</th>
               <th style={{ padding: "14px 18px", width: "140px", textAlign: "center" }}>Actions</th>
             </tr>
@@ -312,14 +387,14 @@ export default function TagMap({ onBack }) {
                   Loading updates...
                 </td>
               </tr>
-            ) : updates.length === 0 ? (
+            ) : filteredUpdates.length === 0 ? (
               <tr>
                 <td colSpan="6" style={{ padding: "30px", textAlign: "center", color: "#64748b" }}>
                   No TagMap updates available.
                 </td>
               </tr>
             ) : (
-              updates.map((item, index) => (
+              filteredUpdates.map((item, index) => (
                 <tr
                   key={item.id || index}
                   style={{
