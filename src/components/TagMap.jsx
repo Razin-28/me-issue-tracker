@@ -17,6 +17,17 @@ export default function TagMap({ onBack }) {
   const [tagVersion, setTagVersion] = useState(""); // Stores Model value
   const [itemChange, setItemChange] = useState("");
 
+  // Helper function: Format YYYY-MM-DD to DD/MM/YYYY
+  const formatDateDisplay = (dateStr) => {
+    if (!dateStr) return "-";
+    const dateOnly = dateStr.split("T")[0].split(" ")[0];
+    if (dateOnly.includes("-")) {
+      const [year, month, day] = dateOnly.split("-");
+      return `${day.padStart(2, "0")}/${month.padStart(2, "0")}/${year}`;
+    }
+    return dateStr;
+  };
+
   // 1. Fetch data from Supabase (Sorted by date descending)
   const fetchTagMapUpdates = async () => {
     setLoading(true);
@@ -403,7 +414,7 @@ export default function TagMap({ onBack }) {
                   }}
                 >
                   <td style={{ padding: "14px 18px", textAlign: "center", color: "#64748b" }}>{index + 1}</td>
-                  <td style={{ padding: "14px 18px", color: "#334155" }}>{item.date}</td>
+                  <td style={{ padding: "14px 18px", color: "#334155" }}>{formatDateDisplay(item.date)}</td>
                   <td style={{ padding: "14px 18px", color: "#0f172a", fontWeight: "600" }}>{item.requestor}</td>
                   <td style={{ padding: "14px 18px", color: "#0284c7", fontWeight: "bold" }}>{item.tag_version}</td>
                   <td style={{ padding: "14px 18px", color: "#334155" }}>{item.item_change}</td>
