@@ -172,7 +172,7 @@ export default function TagMap({ onBack }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
           <h4 style={{ margin: 0, color: "#0c4a6e", display: "flex", alignItems: "center", gap: "6px" }}>
             <span style={{ fontSize: "18px" }}>{editingId ? "✏️" : "➕"}</span>
-            {editingId ? "Edit TagMap Update" : "Add New TagMap Update"}
+            {editingId ? "Edit TagMap Update" : "Add TagMap Update"}
           </h4>
           {editingId && (
             <span style={{ fontSize: "12px", color: "#0284c7", fontWeight: "600", backgroundColor: "#e0f2fe", padding: "4px 8px", borderRadius: "4px" }}>
@@ -195,7 +195,7 @@ export default function TagMap({ onBack }) {
                 Date
               </label>
               <input
-                type="date"
+                type="Enter Date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 style={{ width: "100%", padding: "9px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", boxSizing: "border-box" }}
@@ -209,7 +209,7 @@ export default function TagMap({ onBack }) {
               </label>
               <input
                 type="text"
-                placeholder="Name / ID"
+                placeholder="Enter Requestor"
                 value={requestor}
                 onChange={(e) => setRequestor(e.target.value)}
                 style={{ width: "100%", padding: "9px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", boxSizing: "border-box" }}
@@ -223,7 +223,7 @@ export default function TagMap({ onBack }) {
               </label>
               <input
                 type="text"
-                placeholder="e.g. v1.0.2"
+                placeholder="Enter Tag Version"
                 value={tagVersion}
                 onChange={(e) => setTagVersion(e.target.value)}
                 style={{ width: "100%", padding: "9px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", boxSizing: "border-box" }}
@@ -237,7 +237,7 @@ export default function TagMap({ onBack }) {
               </label>
               <input
                 type="text"
-                placeholder="Description of changes"
+                placeholder="Enter Item Change"
                 value={itemChange}
                 onChange={(e) => setItemChange(e.target.value)}
                 style={{ width: "100%", padding: "9px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", boxSizing: "border-box" }}
