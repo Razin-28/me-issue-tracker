@@ -183,7 +183,7 @@ export default function Auth({ onLoginSuccess }) {
               style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
             />
             <small style={{ color: '#666', fontSize: '11px', display: 'block', marginTop: '3px' }}>
-              *Enter the ME code to verify department registration access.
+              *Enter the code to verify department registration access.
             </small>
           </div>
         )}
