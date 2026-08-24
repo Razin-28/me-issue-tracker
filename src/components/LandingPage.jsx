@@ -7,7 +7,7 @@ export default function LandingPage({ onGoToLogin }) {
       {/* Poster Rekaan */}
       <img 
         src="/Homepage.png" 
-        alt="Proton ME Issue Tracking System" 
+        alt="Proton ME Data Tracking System" 
         className="poster-image" 
       />
 
@@ -15,7 +15,7 @@ export default function LandingPage({ onGoToLogin }) {
       <button 
         className="invisible-login-btn" 
         onClick={onGoToLogin}
-        title="Klik untuk Log Masuk"
+        title="Click to Log In"
       >
         LOGIN
       </button>

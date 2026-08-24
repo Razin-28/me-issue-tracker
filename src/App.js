@@ -75,7 +75,7 @@ export default function App() {
               marginBottom: '20px'
             }}
           >
-            ⬅️ Back to Landing Page
+            ⬅️ Back to Homepage
           </button>
           <Auth onLoginSuccess={() => setShowAuthModal(false)} />
         </div>
