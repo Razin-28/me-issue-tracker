@@ -4,7 +4,8 @@ import { supabase } from '../supabaseClient';
 export default function IssueList({ onBackToDashboard }) {
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+  const [currentUser, setCurrentUser] = useState(null);
+
   // State for Search, Filters (Status, Classification, Date)
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -22,7 +23,16 @@ export default function IssueList({ onBackToDashboard }) {
   const [progressNote, setProgressNote] = useState('');
   const [updating, setUpdating] = useState(false);
 
-  // Fetch issue list from Supabase
+  // 1. Fetch current logged-in user
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
+    };
+    getCurrentUser();
+  }, []);
+
+  // 2. Fetch issue list from Supabase
   const fetchIssues = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -42,7 +52,7 @@ export default function IssueList({ onBackToDashboard }) {
     fetchIssues();
   }, []);
 
-  // Delete Issue Function
+  // Delete Issue Function (Owner only)
   const handleDeleteIssue = async (issueId, issueTitle) => {
     const confirmDelete = window.confirm(`Are you sure you want to delete "${issueTitle || 'this issue'}"?`);
     if (!confirmDelete) return;
@@ -62,7 +72,7 @@ export default function IssueList({ onBackToDashboard }) {
     }
   };
 
-  // Save new Est. Closing Date to Supabase
+  // Save new Est. Closing Date to Supabase (Owner only)
   const handleSaveEstClosing = async (issueId) => {
     if (!newEstClosingDate) {
       setEditingEstClosingId(null);
@@ -281,7 +291,7 @@ export default function IssueList({ onBackToDashboard }) {
           )}
         </div>
 
-        {/* Status & Class Filters (Bersebelahan & Bentuk Dropdown Seragam) */}
+        {/* Status & Class Filters Side-by-Side */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
           
           {/* Status Filter Dropdown */}
@@ -306,7 +316,7 @@ export default function IssueList({ onBackToDashboard }) {
             </select>
           </div>
 
-          {/* Classification Filter Dropdown (All, A, B, C) */}
+          {/* Classification Filter Dropdown */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#333' }}>🏷️ Class:</span>
             <select
@@ -344,6 +354,12 @@ export default function IssueList({ onBackToDashboard }) {
             const textColor = issue.status === 'In Progress' ? '#000' : '#fff';
 
             const manualDate = issue.date_time || issue.created_at;
+
+            // Semakan hak milik: user_id ATAU user_email
+            const isOwner =
+              currentUser &&
+              ((issue.user_id && issue.user_id === currentUser.id) ||
+                (issue.user_email && issue.user_email === currentUser.email));
 
             return (
               <div 
@@ -427,26 +443,29 @@ export default function IssueList({ onBackToDashboard }) {
                           <span style={{ fontWeight: 'bold', color: '#0d3b66' }}>
                             {formatDateOnly(issue.estimated_closing)}
                           </span>
-                          <button
-                            onClick={() => {
-                              setEditingEstClosingId(issue.id);
-                              setNewEstClosingDate(
-                                issue.estimated_closing
-                                  ? issue.estimated_closing.split('T')[0].split(' ')[0]
-                                  : ''
-                              );
-                            }}
-                            style={{
-                              background: 'transparent',
-                              border: 'none',
-                              cursor: 'pointer',
-                              fontSize: '12px',
-                              padding: '0 2px'
-                            }}
-                            title="Edit Est. Closing"
-                          >
-                            ✏️
-                          </button>
+                          {/* Hanya paparkan butang edit jika pengguna adalah pemilik isu */}
+                          {isOwner && (
+                            <button
+                              onClick={() => {
+                                setEditingEstClosingId(issue.id);
+                                setNewEstClosingDate(
+                                  issue.estimated_closing
+                                    ? issue.estimated_closing.split('T')[0].split(' ')[0]
+                                    : ''
+                                );
+                              }}
+                              style={{
+                                background: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                padding: '0 2px'
+                              }}
+                              title="Edit Est. Closing"
+                            >
+                              ✏️
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
@@ -484,41 +503,50 @@ export default function IssueList({ onBackToDashboard }) {
                       </a>
                     )}
                     
-                    <button 
-                      onClick={() => {
-                        setSelectedIssue(issue);
-                        setNewStatus(issue.status || 'In Progress');
-                        setProgressNote(issue.progress_note || '');
-                      }}
-                      style={{ 
-                        border: 'none', 
-                        backgroundColor: '#e9ecef', 
-                        cursor: 'pointer', 
-                        padding: '5px 8px', 
-                        borderRadius: '4px', 
-                        fontSize: '11px', 
-                        fontWeight: 'bold', 
-                        color: '#333'
-                      }}
-                    >
-                      ✏️ Update
-                    </button>
+                    {/* Butang Update & Delete hanya dipaparkan kepada pemilik isu sahaja */}
+                    {isOwner ? (
+                      <>
+                        <button 
+                          onClick={() => {
+                            setSelectedIssue(issue);
+                            setNewStatus(issue.status || 'In Progress');
+                            setProgressNote(issue.progress_note || '');
+                          }}
+                          style={{ 
+                            border: 'none', 
+                            backgroundColor: '#e9ecef', 
+                            cursor: 'pointer', 
+                            padding: '5px 8px', 
+                            borderRadius: '4px', 
+                            fontSize: '11px', 
+                            fontWeight: 'bold', 
+                            color: '#333'
+                          }}
+                        >
+                          ✏️ Update
+                        </button>
 
-                    <button 
-                      onClick={() => handleDeleteIssue(issue.id, issue.what_issue)}
-                      style={{ 
-                        border: 'none', 
-                        backgroundColor: '#dc3545', 
-                        color: '#fff', 
-                        cursor: 'pointer', 
-                        padding: '5px 8px', 
-                        borderRadius: '4px', 
-                        fontSize: '11px', 
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      🗑️ Delete
-                    </button>
+                        <button 
+                          onClick={() => handleDeleteIssue(issue.id, issue.what_issue)}
+                          style={{ 
+                            border: 'none', 
+                            backgroundColor: '#dc3545', 
+                            color: '#fff', 
+                            cursor: 'pointer', 
+                            padding: '5px 8px', 
+                            borderRadius: '4px', 
+                            fontSize: '11px', 
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          🗑️ Delete
+                        </button>
+                      </>
+                    ) : (
+                      <span style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' }}>
+                        View only
+                      </span>
+                    )}
                   </div>
                 </div>
 

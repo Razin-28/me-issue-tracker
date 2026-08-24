@@ -18,18 +18,24 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
     setLoading(true);
 
     try {
-      // Dapatkan data pengguna yang sedang log masuk
+      // 1. Dapatkan data pengguna yang sedang log masuk
       const { data: { user } } = await supabase.auth.getUser();
 
-      const autoStaffName = user?.user_metadata?.full_name || 
-                            user?.user_metadata?.name || 
-                            user?.email?.split('@')[0] || 
-                            'Staff';
+      if (!user) {
+        throw new Error('You must be logged in to create an issue.');
+      }
+
+      const autoStaffName =
+        user?.user_metadata?.full_name ||
+        user?.user_metadata?.name ||
+        user?.email?.split('@')[0] ||
+        'Staff';
 
       const staffEmail = user?.email || null;
 
       let fileUrl = null;
 
+      // 2. Upload file jika ada
       if (file) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
@@ -50,12 +56,12 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
         fileUrl = urlData.publicUrl;
       }
 
-      // Simpan isu ke Supabase
+      // 3. Simpan isu ke Supabase bersama user_id & user_email pemilik
       const { error: insertError } = await supabase.from('issues').insert([
         {
           what_issue: whatIssue,
           description: description,
-          group_name: groupName, // Medan Group
+          group_name: groupName,
           location: location,
           pic: pic,
           pic_name: pic,
@@ -66,7 +72,8 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
           staff_name: autoStaffName,
           staff_id: user?.user_metadata?.staff_id || null,
           file_url: fileUrl,
-          user_id: user ? user.id : null,
+          user_id: user.id,          // ID unik pemilik akaun
+          user_email: user.email,    // E-mel pemilik akaun
           status: 'Open',
         },
       ]);
@@ -76,7 +83,7 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
       }
 
       alert('Issue submitted successfully!');
-      
+
       if (onIssueCreated) {
         onIssueCreated();
       } else if (onBackToDashboard) {
@@ -91,7 +98,30 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
 
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
-      <h2 style={{ color: '#0d3b66', marginTop: '15px', marginBottom: '20px' }}>Open Issue</h2>
+      
+      {/* Top Header / Back Button */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+        {onBackToDashboard && (
+          <button
+            type="button"
+            onClick={onBackToDashboard}
+            style={{
+              backgroundColor: '#ffffff',
+              color: '#0d3b66',
+              border: '1px solid #0d3b66',
+              padding: '6px 14px',
+              borderRadius: '6px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              fontSize: '13px',
+            }}
+          >
+            ⬅ Back to Dashboard
+          </button>
+        )}
+      </div>
+
+      <h2 style={{ color: '#0d3b66', marginTop: '10px', marginBottom: '20px' }}>Open Issue</h2>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         
@@ -177,12 +207,12 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
           <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Issue Classification:</label>
           <select 
             value={classification} 
-            onChange={(e) => setClassification(e.target.value)}
+            onChange={(e) => setClassification(e.target.value)} 
             style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
           >
-            <option value="A">A - High</option>
-            <option value="B">B - Medium</option>
-            <option value="C">C - Low</option>
+            <option value="A">Class A</option>
+            <option value="B">Class B</option>
+            <option value="C">Class C</option>
           </select>
         </div>
 
@@ -223,7 +253,7 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
             borderRadius: '5px', 
             fontWeight: 'bold', 
             fontSize: '16px', 
-            cursor: 'pointer', 
+            cursor: loading ? 'not-allowed' : 'pointer', 
             marginTop: '10px' 
           }}
         >
