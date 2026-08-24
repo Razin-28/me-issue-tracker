@@ -355,11 +355,20 @@ export default function IssueList({ onBackToDashboard }) {
 
             const manualDate = issue.date_time || issue.created_at;
 
-            // Semakan hak milik: user_id ATAU user_email
+            const currentUserName =
+              currentUser?.user_metadata?.full_name ||
+              currentUser?.user_metadata?.name ||
+              currentUser?.email?.split('@')[0] ||
+              '';
+
+            // Semakan hak milik: user_id, user_email, ATAU staff_name
             const isOwner =
-              currentUser &&
-              ((issue.user_id && issue.user_id === currentUser.id) ||
-                (issue.user_email && issue.user_email === currentUser.email));
+              Boolean(currentUser) &&
+              (
+                (issue.user_id && issue.user_id === currentUser.id) ||
+                (issue.user_email && issue.user_email.toLowerCase() === currentUser.email?.toLowerCase()) ||
+                (issue.staff_name && currentUserName && issue.staff_name.trim().toLowerCase() === currentUserName.trim().toLowerCase())
+              );
 
             return (
               <div 

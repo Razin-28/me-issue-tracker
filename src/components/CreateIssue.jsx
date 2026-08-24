@@ -35,7 +35,7 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
 
       let fileUrl = null;
 
-      // 2. Upload file jika ada
+      // 2. Upload fail lampiran jika ada
       if (file) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
@@ -56,7 +56,7 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
         fileUrl = urlData.publicUrl;
       }
 
-      // 3. Simpan isu ke Supabase bersama user_id & user_email pemilik
+      // 3. Simpan isu ke Supabase bersama maklumat pemilik (user_id & user_email)
       const { error: insertError } = await supabase.from('issues').insert([
         {
           what_issue: whatIssue,
@@ -72,8 +72,8 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
           staff_name: autoStaffName,
           staff_id: user?.user_metadata?.staff_id || null,
           file_url: fileUrl,
-          user_id: user.id,          // ID unik pemilik akaun
-          user_email: user.email,    // E-mel pemilik akaun
+          user_id: user.id,          // Disimpan secara automatik untuk kawalan hak milik
+          user_email: user.email,    // Disimpan secara automatik untuk kawalan hak milik
           status: 'Open',
         },
       ]);
