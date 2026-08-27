@@ -2,7 +2,7 @@
 .dashboard-container {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 24px 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f4f6f9;
   min-height: 100vh;
@@ -14,7 +14,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .exit-btn {
@@ -27,7 +27,7 @@
   color: #555;
   cursor: pointer;
   font-weight: 600;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 6px;
   transition: all 0.2s ease;
 }
@@ -58,10 +58,10 @@
   display: grid;
   grid-template-columns: 1.2fr 1fr 1fr;
   grid-template-rows: repeat(2, 220px);
-  gap: 20px; /* Jarak antara kad di desktop */
+  gap: 24px; /* Jarak luas antara kad di desktop */
 }
 
-/* Left Hero Card */
+/* Left Hero Card (Welcome Card) */
 .hero-card {
   grid-row: span 2;
   background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.65)), 
@@ -197,7 +197,7 @@
 
 /* Footer */
 .footer {
-  margin-top: 30px;
+  margin-top: 36px;
   font-size: 12px;
   color: #777;
   display: flex;
@@ -216,7 +216,7 @@
   .dashboard-grid {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto;
-    gap: 18px;
+    gap: 22px;
   }
 
   .hero-card {
@@ -225,6 +225,7 @@
     min-height: 280px;
     padding: 24px;
     border-radius: 18px;
+    margin-bottom: 6px;
   }
 }
 
@@ -234,18 +235,20 @@
     padding: 16px 14px;
   }
 
-  /* Susun satu lajur dengan jarak 22px setiap kad */
+  /* Susun satu per satu secara menegak dengan jarak 26px antara SETIAP kad */
   .dashboard-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 22px; 
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 26px !important; 
   }
 
+  /* Kad Welcome (Hero) */
   .hero-card {
     border-radius: 18px;
     padding: 24px 16px;
     min-height: 270px;
     width: 100%;
+    margin-bottom: 8px; /* Tambahan jarak pemisah di bawah tab Welcome */
   }
 
   .hero-title h1 {
@@ -270,12 +273,12 @@
     font-size: 13px;
   }
 
-  /* Ketinggian dan jarak kad menu */
+  /* Kad-kad Menu: List Issues, Add New Issue, Analytics, TagMap */
   .menu-card {
     min-height: 160px;
     border-radius: 16px;
     width: 100%;
-    margin-bottom: 2px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   }
 
   .card-overlay {
