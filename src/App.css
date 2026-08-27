@@ -167,19 +167,19 @@
 
 /* Background Images for Cards */
 .card-list {
-  background-image: url('/ListIssues.jpg');
+  background-image: url('ListIssues.jpg');
 }
 
 .card-create {
-  background-image: url('/NewIssues.jpg');
+  background-image: url('NewIssues.jpg');
 }
 
 .card-dashboard {
-  background-image: url('/DashboardAnalytics.jpg');
+  background-image: url('DashboardAnalytics.jpg');
 }
 
 .card-escalate {
-  background-image: url('/ME.jpg');
+  background-image: url('ME.jpg');
 }
 
 /* Footer */
