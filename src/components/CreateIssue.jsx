@@ -67,7 +67,7 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
           pic_name: pic,
           pic_email: staffEmail,
           date_time: dateTime || null,
-          classification: classification,
+          classification: classification, // Nilai yang dihantar tetap 'A', 'B', atau 'C'
           estimated_closing: estimatedClosing,
           staff_name: autoStaffName,
           staff_id: user?.user_metadata?.staff_id || null,
@@ -186,11 +186,11 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
           <select 
             value={classification} 
             onChange={(e) => setClassification(e.target.value)} 
-            style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
+            style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box', backgroundColor: '#fff', cursor: 'pointer' }}
           >
-            <option value="A">Class A</option>
-            <option value="B">Class B</option>
-            <option value="C">Class C</option>
+            <option value="A">Class A - Safety/Quality Issue</option>
+            <option value="B">Class B - Cause to Breakdown/Downtime Production</option>
+            <option value="C">Class C - Opportunity for Improvement</option>
           </select>
         </div>
 
