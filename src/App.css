@@ -1,12 +1,15 @@
+* {
+  box-sizing: border-box;
+}
+
 /* Dashboard Main Container */
 .dashboard-container {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 24px 20px;
+  padding: 20px 16px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f4f6f9;
   min-height: 100vh;
-  box-sizing: border-box;
 }
 
 /* Header Top Navigation */
@@ -14,7 +17,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .exit-btn {
@@ -27,9 +30,8 @@
   color: #555;
   cursor: pointer;
   font-weight: 600;
-  padding: 8px 14px;
+  padding: 6px 12px;
   border-radius: 6px;
-  transition: all 0.2s ease;
 }
 
 .exit-btn:hover {
@@ -37,31 +39,15 @@
   background-color: #e9ecef;
 }
 
-.back-btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid #0d3b66;
-  background: #ffffff;
-  color: #0d3b66;
-  cursor: pointer;
-  font-weight: bold;
-  transition: all 0.2s;
-}
-
-.back-btn:hover {
-  background: #0d3b66;
-  color: #ffffff;
-}
-
-/* Dashboard Grid Layout (Desktop) */
+/* Dashboard Grid Layout (Desktop & Tablet) */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr 1fr;
   grid-template-rows: repeat(2, 220px);
-  gap: 24px; /* Jarak luas antara kad di desktop */
+  gap: 20px;
 }
 
-/* Left Hero Card (Welcome Card) */
+/* Left Hero Card (Welcome) */
 .hero-card {
   grid-row: span 2;
   background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.65)), 
@@ -75,24 +61,23 @@
   align-items: center;
   text-align: center;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
-  box-sizing: border-box;
 }
 
 .hero-title h1 {
   font-size: 22px;
   margin-bottom: 5px;
   font-weight: 700;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
 }
 
 .hero-title h2 {
   font-size: 32px;
   margin: 0;
   letter-spacing: 2px;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
 }
 
-/* User Profile Container inside Hero Card */
+/* User Profile */
 .user-profile {
   display: flex;
   flex-direction: column;
@@ -102,7 +87,6 @@
   margin-top: 15px;
 }
 
-/* Avatar Circle */
 .avatar {
   width: 75px;
   height: 75px;
@@ -116,7 +100,6 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* Welcome Text Block */
 .welcome-text {
   color: #ffffff;
   text-align: center;
@@ -141,13 +124,13 @@
   font-weight: 700;
 }
 
-/* Right Side Menu Cards */
+/* Menu Cards */
 .menu-card {
   position: relative;
   border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   background-size: cover;
   background-position: center;
@@ -160,14 +143,12 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Card Bottom Dark Overlay */
 .card-overlay {
   position: absolute;
   bottom: 0;
   width: 100%;
   background: rgba(0, 0, 0, 0.65);
   padding: 12px 15px;
-  box-sizing: border-box;
   text-align: center;
 }
 
@@ -178,114 +159,46 @@
   font-weight: 600;
 }
 
-/* Background Images for Cards */
-.card-list {
-  background-image: url('ListIssues.jpg');
-}
+/* Background Images */
+.card-list { background-image: url('ListIssues.jpg'); }
+.card-create { background-image: url('NewIssues.jpg'); }
+.card-dashboard { background-image: url('DashboardAnalytics.jpg'); }
+.card-escalate { background-image: url('tagmap.jpg'); }
 
-.card-create {
-  background-image: url('NewIssues.jpg');
-}
-
-.card-dashboard {
-  background-image: url('DashboardAnalytics.jpg');
-}
-
-.card-escalate {
-  background-image: url('tagmap.jpg');
-}
-
-/* Footer */
 .footer {
   margin-top: 36px;
   font-size: 12px;
   color: #777;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
+  text-align: center;
   padding: 16px 0;
 }
 
 /* =========================================================
-   RESPONSIVE BREAKPOINTS (Laptop, Tablet & Mobile Friendly)
+   MOBILE RESPONSIVE (Skrin Telefon Pintar)
    ========================================================= */
-
-/* Tablet (max-width: 900px) */
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .dashboard-grid {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto;
-    gap: 22px;
+    display: block !important; /* Tukar daripada grid ke blok menegak */
   }
 
-  .hero-card {
-    grid-column: span 2;
-    grid-row: auto;
-    min-height: 280px;
-    padding: 24px;
-    border-radius: 18px;
-    margin-bottom: 6px;
-  }
-}
-
-/* Smartphone / Skrin Telefon (max-width: 600px) */
-@media (max-width: 600px) {
-  .dashboard-container {
-    padding: 16px 14px;
-  }
-
-  /* Susun satu per satu secara menegak dengan jarak 26px antara SETIAP kad */
-  .dashboard-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 26px !important; 
-  }
-
-  /* Kad Welcome (Hero) */
-  .hero-card {
-    border-radius: 18px;
-    padding: 24px 16px;
-    min-height: 270px;
-    width: 100%;
-    margin-bottom: 8px; /* Tambahan jarak pemisah di bawah tab Welcome */
-  }
-
-  .hero-title h1 {
-    font-size: 15px;
-  }
-
-  .hero-title h2 {
-    font-size: 24px;
-  }
-
-  .avatar {
-    width: 64px;
-    height: 64px;
-    font-size: 30px;
-  }
-
-  .user-name {
-    font-size: 14px;
-  }
-
-  .staff-id-text {
-    font-size: 13px;
-  }
-
-  /* Kad-kad Menu: List Issues, Add New Issue, Analytics, TagMap */
+  /* Jarak bawah bagi SETIAP KAD termasuk Welcome */
+  .hero-card,
   .menu-card {
-    min-height: 160px;
-    border-radius: 16px;
-    width: 100%;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    display: flex !important;
+    width: 100% !important;
+    margin-bottom: 24px !important; /* JARAK 24px ANTARA SETIAP TAB */
+    border-radius: 18px !important;
   }
 
-  .card-overlay {
-    padding: 12px;
+  .hero-card {
+    min-height: 280px !important;
+    padding: 24px 16px !important;
   }
 
-  .card-overlay h3 {
-    font-size: 15px;
+  .hero-title h1 { font-size: 16px; }
+  .hero-title h2 { font-size: 24px; }
+
+  .menu-card {
+    min-height: 165px !important;
   }
 }
