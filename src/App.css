@@ -6,6 +6,7 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f4f6f9;
   min-height: 100vh;
+  box-sizing: border-box;
 }
 
 /* Header Top Navigation */
@@ -26,13 +27,17 @@
   color: #555;
   cursor: pointer;
   font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
 .exit-btn:hover {
   color: #d9534f;
+  background-color: #e9ecef;
 }
 
-/* Dashboard Grid Layout */
+/* Dashboard Grid Layout (Desktop) */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr 1fr;
@@ -43,9 +48,8 @@
 /* Left Hero Card */
 .hero-card {
   grid-row: span 2;
-  /* Gantikan link Unsplash dengan 'HeroBg.jpg' */
   background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.65)), 
-              url('ME.jpg') center/cover; 
+              url('/ME.jpg') center/cover no-repeat; 
   border-top-left-radius: 40px;
   border-bottom-left-radius: 40px;
   border-top-right-radius: 12px;
@@ -57,22 +61,22 @@
   justify-content: space-between;
   align-items: center;
   text-align: center;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
 }
 
-
 .hero-title h1 {
-  font-size: 24px;
+  font-size: 22px;
   margin-bottom: 5px;
   font-weight: 700;
-  text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
 }
 
 .hero-title h2 {
-  font-size: 36px;
+  font-size: 32px;
   margin: 0;
   letter-spacing: 2px;
-  text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
 }
 
 /* User Profile Container inside Hero Card */
@@ -81,7 +85,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   margin-top: 15px;
 }
 
@@ -106,41 +110,41 @@
   text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
 }
 
-/* Line 1: Welcome, */
 .welcome-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   margin-bottom: 2px;
 }
 
-/* Line 2: User Full Name */
 .user-name {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   margin-bottom: 2px;
+  word-break: break-word;
 }
 
-/* Line 3: Staff ID (72202523) */
 .staff-id-text {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
 }
 
 /* Right Side Menu Cards */
 .menu-card {
   position: relative;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
+  min-height: 160px;
 }
 
 .menu-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* Card Bottom Dark Overlay */
@@ -151,42 +155,31 @@
   background: rgba(0, 0, 0, 0.65);
   padding: 12px 15px;
   box-sizing: border-box;
+  text-align: center;
 }
 
 .card-overlay h3 {
   color: white;
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
 }
 
 /* Background Images for Cards */
 .card-list {
-  background-image: url('ListIssues.jpg'); /* <--- Tukar pautan gambar di sini */
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-image: url('/ListIssues.jpg');
 }
 
 .card-create {
-  background-image: url('NewIssues.jpg'); /* <--- Tukar pautan gambar di sini */
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;;
+  background-image: url('/NewIssues.jpg');
 }
 
 .card-dashboard {
-  background-image: url('DashboardAnalytics.jpg'); /* <--- Tukar pautan gambar di sini */
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-image: url('/DashboardAnalytics.jpg');
 }
 
 .card-escalate {
-  background-image: url('tagmap.jpg'); /* <--- Tukar pautan gambar di sini */
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;;
+  background-image: url('/ME.jpg');
 }
 
 /* Footer */
@@ -196,5 +189,81 @@
   color: #777;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
+  padding: 10px 0;
+}
+
+/* =========================================================
+   RESPONSIVE BREAKPOINTS (Laptop, Tablet & Mobile Friendly)
+   ========================================================= */
+
+/* Tablet & Skrin Sederhana (max-width: 900px) */
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+  }
+
+  .hero-card {
+    grid-column: span 2;
+    grid-row: auto;
+    border-radius: 20px;
+    min-height: 280px;
+    padding: 24px;
+  }
+}
+
+/* Smartphone / Skrin Kecil (max-width: 600px) */
+@media (max-width: 600px) {
+  .dashboard-container {
+    padding: 12px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .hero-card {
+    grid-column: span 1;
+    border-radius: 16px;
+    padding: 20px 15px;
+    min-height: 260px;
+  }
+
+  .hero-title h1 {
+    font-size: 16px;
+  }
+
+  .hero-title h2 {
+    font-size: 24px;
+  }
+
+  .avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 28px;
+  }
+
+  .user-name {
+    font-size: 14px;
+  }
+
+  .staff-id-text {
+    font-size: 13px;
+  }
+
+  .menu-card {
+    min-height: 120px;
+    border-radius: 10px;
+  }
+
+  .card-overlay {
+    padding: 10px;
+  }
+
+  .card-overlay h3 {
+    font-size: 14px;
+  }
 }

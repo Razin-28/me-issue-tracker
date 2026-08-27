@@ -105,8 +105,8 @@ export default function App() {
         </button>
         {activeTab !== 'home' && (
           <button 
+            className="back-btn"
             onClick={() => setActiveTab('home')}
-            style={{ padding: '8px 16px', borderRadius: '5px', border: '1px solid #007bff', background: '#fff', color: '#007bff', cursor: 'pointer', fontWeight: 'bold' }}
           >
             ⬅️ Back to Dashboard
           </button>
@@ -115,8 +115,8 @@ export default function App() {
 
       {/* Main Content View */}
       {activeTab === 'home' && (
-        <div className="dashboard-grid">
-          {/* Main Left Hero Card */}
+        <div className="dashboard-main-layout">
+          {/* Main Hero Card (Profile & Info) */}
           <div className="hero-card">
             <div className="hero-title">
               <h1>Manufacturing Engineering</h1>
@@ -133,28 +133,30 @@ export default function App() {
             </div>
           </div>
 
-          {/* Menu Cards */}
-          <div className="menu-card card-list" onClick={() => setActiveTab('list')}>
-            <div className="card-overlay">
-              <h3>List of Issues</h3>
+          {/* Grid Menu Cards */}
+          <div className="menu-grid">
+            <div className="menu-card card-list" onClick={() => setActiveTab('list')}>
+              <div className="card-overlay">
+                <h3>List of Issues</h3>
+              </div>
             </div>
-          </div>
 
-          <div className="menu-card card-create" onClick={() => setActiveTab('create')}>
-            <div className="card-overlay">
-              <h3>Add New Issue</h3>
+            <div className="menu-card card-create" onClick={() => setActiveTab('create')}>
+              <div className="card-overlay">
+                <h3>Add New Issue</h3>
+              </div>
             </div>
-          </div>
 
-          <div className="menu-card card-dashboard" onClick={() => setActiveTab('analytics')}>
-            <div className="card-overlay">
-              <h3>Dashboard Analytics</h3>
+            <div className="menu-card card-dashboard" onClick={() => setActiveTab('analytics')}>
+              <div className="card-overlay">
+                <h3>Dashboard Analytics</h3>
+              </div>
             </div>
-          </div>
 
-          <div className="menu-card card-escalate" onClick={() => setActiveTab('tagmap')}>
-            <div className="card-overlay">
-              <h3>TagMap Updates</h3>
+            <div className="menu-card card-escalate" onClick={() => setActiveTab('tagmap')}>
+              <div className="card-overlay">
+                <h3>TagMap Updates</h3>
+              </div>
             </div>
           </div>
         </div>
@@ -163,7 +165,6 @@ export default function App() {
       {/* View: Create Issue Form */}
       {activeTab === 'create' && (
         <div>
-          <h2>Add New Issue</h2>
           <CreateIssue 
             userProfile={{ id: session.user.id, department: userProfile?.department || 'ME', staff_id: staffIdDisplay }} 
             onBackToDashboard={() => setActiveTab('home')}
@@ -176,6 +177,7 @@ export default function App() {
       {activeTab === 'list' && (
         <div>
           <IssueList 
+            onBackToDashboard={() => setActiveTab('home')}
             userProfile={{ id: session.user.id }} 
             refreshTrigger={refreshTrigger} 
           />
@@ -192,7 +194,7 @@ export default function App() {
       {/* View: TagMap Updates Table */}
       {activeTab === 'tagmap' && (
         <div>
-          <TagMapUpdates onBackToDashboard={() => setActiveTab('home')} />
+          <TagMapUpdates onBack={() => setActiveTab('home')} />
         </div>
       )}
 
