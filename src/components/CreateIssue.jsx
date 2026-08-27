@@ -97,31 +97,9 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
+    <div style={{ padding: '10px 20px 30px', maxWidth: '600px', margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
       
-      {/* Top Header / Back Button */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
-        {onBackToDashboard && (
-          <button
-            type="button"
-            onClick={onBackToDashboard}
-            style={{
-              backgroundColor: '#ffffff',
-              color: '#0d3b66',
-              border: '1px solid #0d3b66',
-              padding: '6px 14px',
-              borderRadius: '6px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              fontSize: '13px',
-            }}
-          >
-            ⬅ Back to Dashboard
-          </button>
-        )}
-      </div>
-
-      <h2 style={{ color: '#0d3b66', marginTop: '10px', marginBottom: '20px' }}>Open Issue</h2>
+      <h2 style={{ color: '#0d3b66', marginTop: '0', marginBottom: '20px' }}>Open Issue</h2>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         

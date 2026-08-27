@@ -144,29 +144,7 @@ export default function TagMap({ onBack }) {
   });
 
   return (
-    <div style={{ padding: "24px 32px", backgroundColor: "#f8fafc", minHeight: "100vh", fontFamily: "Arial, sans-serif" }}>
-      {/* Top Navigation */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
-        {onBack && (
-          <button
-            onClick={onBack}
-            style={{
-              backgroundColor: "#ffffff",
-              color: "#2563eb",
-              border: "1px solid #2563eb",
-              padding: "8px 16px",
-              borderRadius: "6px",
-              fontWeight: "bold",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-            }}
-          >
-            ⬅ Back to Dashboard
-          </button>
-        )}
-      </div>
+    <div style={{ padding: "16px 12px", maxWidth: "1200px", margin: "0 auto", backgroundColor: "#f8fafc", minHeight: "100vh", fontFamily: "Arial, sans-serif" }}>
 
       {/* Banner Title */}
       <div
@@ -176,9 +154,9 @@ export default function TagMap({ onBack }) {
           padding: "16px",
           borderRadius: "8px",
           textAlign: "center",
-          fontSize: "22px",
+          fontSize: "20px",
           fontWeight: "bold",
-          marginBottom: "24px",
+          marginBottom: "20px",
           letterSpacing: "0.5px",
         }}
       >
@@ -189,15 +167,15 @@ export default function TagMap({ onBack }) {
       <div
         style={{
           backgroundColor: "#ffffff",
-          padding: "24px",
+          padding: "18px 16px",
           borderRadius: "8px",
           boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-          marginBottom: "24px",
+          marginBottom: "20px",
           border: editingId ? "2px solid #0284c7" : "1px solid #e2e8f0",
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-          <h4 style={{ margin: 0, color: "#0c4a6e", display: "flex", alignItems: "center", gap: "6px" }}>
+          <h4 style={{ margin: 0, color: "#0c4a6e", display: "flex", alignItems: "center", gap: "6px", fontSize: "16px" }}>
             <span style={{ fontSize: "18px" }}>{editingId ? "✏️" : "➕"}</span>
             {editingId ? "Edit TagMap Update" : "Add TagMap Update"}
           </h4>
@@ -213,7 +191,7 @@ export default function TagMap({ onBack }) {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: "16px",
+              gap: "14px",
               marginBottom: "16px",
             }}
           >
@@ -315,12 +293,12 @@ export default function TagMap({ onBack }) {
       <div
         style={{
           backgroundColor: "#ffffff",
-          padding: "14px 20px",
+          padding: "14px 16px",
           borderRadius: "8px",
           boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
           display: "flex",
           flexWrap: "wrap",
-          gap: "16px",
+          gap: "14px",
           alignItems: "center",
           marginBottom: "16px",
           border: "1px solid #e2e8f0",
@@ -370,25 +348,27 @@ export default function TagMap({ onBack }) {
         </div>
       </div>
 
-      {/* Data Table */}
+      {/* Data Table Responsive Wrapper */}
       <div
         style={{
+          width: "100%",
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
           backgroundColor: "#ffffff",
           borderRadius: "8px",
-          overflow: "hidden",
           boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
           border: "1px solid #e2e8f0",
         }}
       >
-        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+        <table style={{ width: "100%", minWidth: "620px", borderCollapse: "collapse", textAlign: "left" }}>
           <thead>
-            <tr style={{ backgroundColor: "#0c4a6e", color: "#ffffff", fontSize: "14px" }}>
-              <th style={{ padding: "14px 18px", width: "50px", textAlign: "center" }}>No.</th>
-              <th style={{ padding: "14px 18px", width: "130px" }}>Date</th>
-              <th style={{ padding: "14px 18px", width: "180px" }}>Requestor</th>
-              <th style={{ padding: "14px 18px", width: "140px" }}>Model</th>
-              <th style={{ padding: "14px 18px" }}>Item Change</th>
-              <th style={{ padding: "14px 18px", width: "140px", textAlign: "center" }}>Actions</th>
+            <tr style={{ backgroundColor: "#0c4a6e", color: "#ffffff", fontSize: "13px" }}>
+              <th style={{ padding: "12px 14px", width: "45px", textAlign: "center" }}>No.</th>
+              <th style={{ padding: "12px 14px", width: "110px", whiteSpace: "nowrap" }}>Date</th>
+              <th style={{ padding: "12px 14px", width: "140px" }}>Requestor</th>
+              <th style={{ padding: "12px 14px", width: "120px" }}>Model</th>
+              <th style={{ padding: "12px 14px" }}>Item Change</th>
+              <th style={{ padding: "12px 14px", width: "130px", textAlign: "center", whiteSpace: "nowrap" }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -410,15 +390,16 @@ export default function TagMap({ onBack }) {
                   key={item.id || index}
                   style={{
                     borderBottom: "1px solid #f1f5f9",
-                    backgroundColor: editingId === item.id ? "#f0f9ff" : "transparent",
+                    backgroundColor: editingId === item.id ? "#f0f9ff" : index % 2 === 0 ? "#ffffff" : "#f8fafc",
+                    fontSize: "13px",
                   }}
                 >
-                  <td style={{ padding: "14px 18px", textAlign: "center", color: "#64748b" }}>{index + 1}</td>
-                  <td style={{ padding: "14px 18px", color: "#334155" }}>{formatDateDisplay(item.date)}</td>
-                  <td style={{ padding: "14px 18px", color: "#0f172a", fontWeight: "600" }}>{item.requestor}</td>
-                  <td style={{ padding: "14px 18px", color: "#0284c7", fontWeight: "bold" }}>{item.tag_version}</td>
-                  <td style={{ padding: "14px 18px", color: "#334155" }}>{item.item_change}</td>
-                  <td style={{ padding: "14px 18px", textAlign: "center" }}>
+                  <td style={{ padding: "12px 14px", textAlign: "center", color: "#64748b" }}>{index + 1}</td>
+                  <td style={{ padding: "12px 14px", color: "#334155", whiteSpace: "nowrap" }}>{formatDateDisplay(item.date)}</td>
+                  <td style={{ padding: "12px 14px", color: "#0f172a", fontWeight: "600" }}>{item.requestor}</td>
+                  <td style={{ padding: "12px 14px", color: "#0284c7", fontWeight: "bold" }}>{item.tag_version}</td>
+                  <td style={{ padding: "12px 14px", color: "#334155", wordBreak: "break-word" }}>{item.item_change}</td>
+                  <td style={{ padding: "12px 14px", textAlign: "center", whiteSpace: "nowrap" }}>
                     <div style={{ display: "flex", justifyContent: "center", gap: "6px" }}>
                       <button
                         onClick={() => handleEdit(item)}
