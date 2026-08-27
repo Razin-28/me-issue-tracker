@@ -2,7 +2,7 @@
 .dashboard-container {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 24px 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f4f6f9;
   min-height: 100vh;
@@ -14,7 +14,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .exit-btn {
@@ -37,12 +37,28 @@
   background-color: #e9ecef;
 }
 
+.back-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid #0d3b66;
+  background: #ffffff;
+  color: #0d3b66;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  background: #0d3b66;
+  color: #ffffff;
+}
+
 /* Dashboard Grid Layout (Desktop) */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr 1fr;
   grid-template-rows: repeat(2, 220px);
-  gap: 15px;
+  gap: 20px; /* Jarak antara kad di desktop */
 }
 
 /* Left Hero Card */
@@ -50,10 +66,7 @@
   grid-row: span 2;
   background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.65)), 
               url('ME.jpg') center/cover no-repeat; 
-  border-top-left-radius: 40px;
-  border-bottom-left-radius: 40px;
-  border-top-right-radius: 12px;
-  border-bottom-right-radius: 12px;
+  border-radius: 20px;
   padding: 30px 20px;
   color: white;
   display: flex;
@@ -61,7 +74,7 @@
   justify-content: space-between;
   align-items: center;
   text-align: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
   box-sizing: border-box;
 }
 
@@ -131,15 +144,15 @@
 /* Right Side Menu Cards */
 .menu-card {
   position: relative;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  min-height: 160px;
+  min-height: 180px;
 }
 
 .menu-card:hover {
@@ -165,7 +178,7 @@
   font-weight: 600;
 }
 
-/* Background Images for Cards (Relative path to src/) */
+/* Background Images for Cards */
 .card-list {
   background-image: url('ListIssues.jpg');
 }
@@ -178,64 +191,67 @@
   background-image: url('DashboardAnalytics.jpg');
 }
 
+/* Betulkan nama fail imej TagMap di sini */
 .card-escalate {
-  background-image: url('ME.jpg');
+  background-image: url('tagmap.jpg');
 }
 
 /* Footer */
 .footer {
-  margin-top: 25px;
+  margin-top: 30px;
   font-size: 12px;
   color: #777;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 5px;
-  padding: 10px 0;
+  padding: 16px 0;
 }
 
 /* =========================================================
    RESPONSIVE BREAKPOINTS (Laptop, Tablet & Mobile Friendly)
    ========================================================= */
 
-/* Tablet & Skrin Sederhana (max-width: 900px) */
+/* Tablet (max-width: 900px) */
 @media (max-width: 900px) {
   .dashboard-grid {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto;
+    gap: 16px;
   }
 
   .hero-card {
     grid-column: span 2;
     grid-row: auto;
-    border-radius: 20px;
     min-height: 280px;
     padding: 24px;
+    border-radius: 18px;
   }
 }
 
-/* Smartphone / Skrin Kecil (max-width: 600px) */
+/* Smartphone / Skrin Telefon (max-width: 600px) */
 @media (max-width: 600px) {
   .dashboard-container {
-    padding: 12px;
+    padding: 16px 14px;
   }
 
   .dashboard-grid {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
-    gap: 12px;
+    gap: 18px; /* Jarak antara kad di telefon */
   }
 
   .hero-card {
     grid-column: span 1;
     grid-row: auto;
-    border-radius: 16px;
-    padding: 20px 15px;
-    min-height: 260px;
+    border-radius: 18px;
+    padding: 24px 16px;
+    min-height: 270px;
+    margin-bottom: 4px;
   }
 
   .hero-title h1 {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .hero-title h2 {
@@ -243,9 +259,9 @@
   }
 
   .avatar {
-    width: 60px;
-    height: 60px;
-    font-size: 28px;
+    width: 64px;
+    height: 64px;
+    font-size: 30px;
   }
 
   .user-name {
@@ -257,15 +273,15 @@
   }
 
   .menu-card {
-    min-height: 120px;
-    border-radius: 10px;
+    min-height: 160px; /* Saiz kad menu selesa dipandang di telefon */
+    border-radius: 16px;
   }
 
   .card-overlay {
-    padding: 10px;
+    padding: 12px;
   }
 
   .card-overlay h3 {
-    font-size: 14px;
+    font-size: 15px;
   }
 }
