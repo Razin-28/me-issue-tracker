@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
-export default function IssueList({ onBackToDashboard }) {
+export default function IssueList() {
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
@@ -214,29 +214,8 @@ export default function IssueList({ onBackToDashboard }) {
   });
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Arial, sans-serif', backgroundColor: '#f4f6f9', minHeight: '100vh' }}>
+    <div style={{ padding: '10px 20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
       
-      {/* Top Header */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
-        {onBackToDashboard && (
-          <button
-            onClick={onBackToDashboard}
-            style={{
-              backgroundColor: '#ffffff',
-              color: '#0d3b66',
-              border: '1px solid #0d3b66',
-              padding: '6px 14px',
-              borderRadius: '6px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              fontSize: '13px'
-            }}
-          >
-            ⬅ Back to Dashboard
-          </button>
-        )}
-      </div>
-
       {/* Header Bar */}
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px', backgroundColor: '#0d3b66', padding: '15px 20px', borderRadius: '8px', color: '#fff' }}>
         <h2 style={{ margin: 0, fontSize: '22px', textAlign: 'center' }}>Issue List</h2>
