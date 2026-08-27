@@ -6,24 +6,23 @@ export default function IssueList() {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
 
-  // State for Search, Filters (Status, Classification, Date)
+  // Filter States
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [classificationFilter, setClassificationFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('');
 
-  // State for inline edit Est. Closing
+  // Est. Closing Inline Edit
   const [editingEstClosingId, setEditingEstClosingId] = useState(null);
   const [newEstClosingDate, setNewEstClosingDate] = useState('');
   const [savingEstDate, setSavingEstDate] = useState(false);
 
-  // State for progress update modal
+  // Update Progress & Status Modal
   const [selectedIssue, setSelectedIssue] = useState(null);
-  const [newStatus, setNewStatus] = useState('');
+  const [newStatus, setNewStatus] = useState('Open');
   const [progressNote, setProgressNote] = useState('');
   const [updating, setUpdating] = useState(false);
 
-  // 1. Fetch current logged-in user
   useEffect(() => {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -32,7 +31,6 @@ export default function IssueList() {
     getCurrentUser();
   }, []);
 
-  // 2. Fetch issue list from Supabase
   const fetchIssues = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -52,27 +50,22 @@ export default function IssueList() {
     fetchIssues();
   }, []);
 
-  // Delete Issue Function (Owner only)
   const handleDeleteIssue = async (issueId, issueTitle) => {
     const confirmDelete = window.confirm(`Are you sure you want to delete "${issueTitle || 'this issue'}"?`);
     if (!confirmDelete) return;
 
     setIssues((prevIssues) => prevIssues.filter((item) => item.id !== issueId));
 
-    const { error } = await supabase
-      .from('issues')
-      .delete()
-      .eq('id', issueId);
+    const { error } = await supabase.from('issues').delete().eq('id', issueId);
 
     if (error) {
-      alert('Failed to delete issue from database: ' + error.message);
+      alert('Failed to delete issue: ' + error.message);
       fetchIssues();
     } else {
       alert('Issue deleted successfully!');
     }
   };
 
-  // Save new Est. Closing Date to Supabase (Owner only)
   const handleSaveEstClosing = async (issueId) => {
     if (!newEstClosingDate) {
       setEditingEstClosingId(null);
@@ -106,7 +99,6 @@ export default function IssueList() {
 
   const formatDateTime = (dateTimeStr) => {
     if (!dateTimeStr) return '-';
-    
     const cleanStr = dateTimeStr.replace('T', ' ');
     const [datePart, timePart] = cleanStr.split(' ');
 
@@ -126,10 +118,8 @@ export default function IssueList() {
           formattedTime = `, ${hours}:${minutes} ${ampm}`;
         }
       }
-
       return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year.slice(-2)}${formattedTime}`;
     }
-
     return dateTimeStr;
   };
 
@@ -143,10 +133,30 @@ export default function IssueList() {
     return dateStr;
   };
 
+  // Helper function untuk ikon Harvey Balls & warna status
+  const getStatusDetails = (status) => {
+    switch (status) {
+      case 'In Progress (1/4)':
+        return { icon: '◔', text: 'In Progress 1/4', bg: '#fd7e14', color: '#fff' };
+      case 'In Progress (2/4)':
+        return { icon: '◑', text: 'In Progress 2/4', bg: '#f59e0b', color: '#000' };
+      case 'In Progress (3/4)':
+        return { icon: '◕', text: 'In Progress 3/4', bg: '#0284c7', color: '#fff' };
+      case 'In Progress':
+        return { icon: '◑', text: 'In Progress 2/4', bg: '#f59e0b', color: '#000' };
+      case 'Closed':
+      case 'Completed':
+      case 'Complete':
+        return { icon: '⚫', text: 'Closed', bg: '#16a34a', color: '#fff' };
+      case 'Open':
+      default:
+        return { icon: '⚪', text: 'Open', bg: '#dc3545', color: '#fff' };
+    }
+  };
+
   const handleUpdateProgress = async (e) => {
     e.preventDefault();
     setUpdating(true);
-
     const now = new Date().toISOString();
 
     const { error } = await supabase
@@ -169,10 +179,9 @@ export default function IssueList() {
     setUpdating(false);
   };
 
-  // Filter issues based on Search, Status, Classification, and Date
   const filteredIssues = issues.filter((issue) => {
     const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = 
+    const matchesSearch =
       (issue.what_issue && issue.what_issue.toLowerCase().includes(searchLower)) ||
       (issue.description && issue.description.toLowerCase().includes(searchLower)) ||
       (issue.group_name && issue.group_name.toLowerCase().includes(searchLower)) ||
@@ -185,8 +194,10 @@ export default function IssueList() {
 
     let matchesStatus = true;
     if (statusFilter !== 'All') {
-      if (statusFilter === 'Completed') {
-        matchesStatus = issue.status === 'Completed' || issue.status === 'Complete';
+      if (statusFilter === 'Closed') {
+        matchesStatus = issue.status === 'Closed' || issue.status === 'Completed' || issue.status === 'Complete';
+      } else if (statusFilter === 'In Progress') {
+        matchesStatus = issue.status?.startsWith('In Progress');
       } else {
         matchesStatus = issue.status === statusFilter;
       }
@@ -201,13 +212,11 @@ export default function IssueList() {
     if (dateFilter) {
       const issueDateStr = issue.date_time || issue.created_at;
       const issueFormattedDate = issueDateStr ? issueDateStr.split('T')[0].split(' ')[0] : '';
-
       let estClosingFormattedDate = '';
       if (issue.estimated_closing) {
         estClosingFormattedDate = issue.estimated_closing.split('T')[0].split(' ')[0];
       }
-
-      matchesDate = (issueFormattedDate === dateFilter) || (estClosingFormattedDate === dateFilter);
+      matchesDate = issueFormattedDate === dateFilter || estClosingFormattedDate === dateFilter;
     }
 
     return matchesSearch && matchesStatus && matchesClassification && matchesDate;
@@ -215,7 +224,6 @@ export default function IssueList() {
 
   return (
     <div style={{ padding: '10px 20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
-      
       {/* Header Bar */}
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px', backgroundColor: '#0d3b66', padding: '15px 20px', borderRadius: '8px', color: '#fff' }}>
         <h2 style={{ margin: 0, fontSize: '22px', textAlign: 'center' }}>Issue List</h2>
@@ -223,92 +231,60 @@ export default function IssueList() {
 
       {/* Search & Filter Bar */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', marginBottom: '20px', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', padding: '12px 16px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-        
-        {/* Search Input */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '1', minWidth: '220px' }}>
           <span style={{ fontSize: '16px' }}>🔍</span>
-          <input 
-            type="text" 
-            placeholder="Search issue, group, name, location, PIC..." 
+          <input
+            type="text"
+            placeholder="Search issue, group, name, location, PIC..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              borderRadius: '5px',
-              border: '1px solid #ccc',
-              fontSize: '13px',
-              outline: 'none'
-            }}
+            style={{ width: '100%', padding: '8px 12px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '13px', outline: 'none' }}
           />
           {searchTerm && (
-            <button 
-              onClick={() => setSearchTerm('')} 
-              style={{ border: 'none', backgroundColor: 'transparent', cursor: 'pointer', color: '#888', fontWeight: 'bold' }}
-            >
+            <button onClick={() => setSearchTerm('')} style={{ border: 'none', backgroundColor: 'transparent', cursor: 'pointer', color: '#888', fontWeight: 'bold' }}>
               ✖
             </button>
           )}
         </div>
 
-        {/* Date Filter */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#333' }}>📅 Date:</span>
-          <input 
-            type="date" 
+          <input
+            type="date"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
             style={{ padding: '6px 10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', cursor: 'pointer' }}
           />
           {dateFilter && (
-            <button 
-              onClick={() => setDateFilter('')} 
-              style={{ border: 'none', backgroundColor: '#dc3545', color: '#fff', borderRadius: '4px', padding: '4px 8px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
-            >
+            <button onClick={() => setDateFilter('')} style={{ border: 'none', backgroundColor: '#dc3545', color: '#fff', borderRadius: '4px', padding: '4px 8px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}>
               Clear
             </button>
           )}
         </div>
 
-        {/* Status & Class Filters Side-by-Side */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
-          
-          {/* Status Filter Dropdown */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#333' }}>📌 Status:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              style={{
-                padding: '6px 10px',
-                borderRadius: '5px',
-                border: '1px solid #ccc',
-                fontSize: '12px',
-                backgroundColor: '#fff',
-                cursor: 'pointer'
-              }}
+              style={{ padding: '6px 10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', backgroundColor: '#fff', cursor: 'pointer' }}
             >
               <option value="All">All Statuses</option>
-              <option value="Open">Open</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
+              <option value="Open">⚪ Open (0/4)</option>
+              <option value="In Progress (1/4)">◔ In Progress (1/4)</option>
+              <option value="In Progress (2/4)">◑ In Progress (2/4)</option>
+              <option value="In Progress (3/4)">◕ In Progress (3/4)</option>
+              <option value="Closed">⚫ Closed (4/4)</option>
             </select>
           </div>
 
-          {/* Classification Filter Dropdown */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#333' }}>🏷️ Class:</span>
             <select
               value={classificationFilter}
               onChange={(e) => setClassificationFilter(e.target.value)}
-              style={{
-                padding: '6px 10px',
-                borderRadius: '5px',
-                border: '1px solid #ccc',
-                fontSize: '12px',
-                backgroundColor: '#fff',
-                cursor: 'pointer'
-              }}
+              style={{ padding: '6px 10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', backgroundColor: '#fff', cursor: 'pointer' }}
             >
               <option value="All">All Classes</option>
               <option value="A">Class A</option>
@@ -316,9 +292,7 @@ export default function IssueList() {
               <option value="C">Class C</option>
             </select>
           </div>
-
         </div>
-
       </div>
 
       {loading ? (
@@ -328,10 +302,7 @@ export default function IssueList() {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '15px' }}>
           {filteredIssues.map((issue) => {
-            const isCompleted = issue.status === 'Completed' || issue.status === 'Complete';
-            const statusColor = isCompleted ? '#28a745' : issue.status === 'In Progress' ? '#ffc107' : '#dc3545';
-            const textColor = issue.status === 'In Progress' ? '#000' : '#fff';
-
+            const statusInfo = getStatusDetails(issue.status);
             const manualDate = issue.date_time || issue.created_at;
 
             const currentUserName =
@@ -340,46 +311,44 @@ export default function IssueList() {
               currentUser?.email?.split('@')[0] ||
               '';
 
-            // Semakan hak milik: user_id, user_email, ATAU staff_name
             const isOwner =
               Boolean(currentUser) &&
-              (
-                (issue.user_id && issue.user_id === currentUser.id) ||
+              ((issue.user_id && issue.user_id === currentUser.id) ||
                 (issue.user_email && issue.user_email.toLowerCase() === currentUser.email?.toLowerCase()) ||
-                (issue.staff_name && currentUserName && issue.staff_name.trim().toLowerCase() === currentUserName.trim().toLowerCase())
-              );
+                (issue.staff_name && currentUserName && issue.staff_name.trim().toLowerCase() === currentUserName.trim().toLowerCase()));
 
             return (
-              <div 
-                key={issue.id} 
-                style={{ 
-                  backgroundColor: '#fff', 
-                  border: '1px solid #e0e0e0', 
-                  borderRadius: '6px', 
-                  padding: '14px', 
+              <div
+                key={issue.id}
+                style={{
+                  backgroundColor: '#fff',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '6px',
+                  padding: '14px',
                   boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  justifyContent: 'space-between'
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
                 }}
               >
                 <div>
-                  {/* Date & Classification Badge */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid #eee', paddingBottom: '6px' }}>
                     <span style={{ fontSize: '11px', color: '#666', fontWeight: 'bold' }}>
                       📅 Date: {formatDateTime(manualDate)}
                     </span>
 
                     {issue.classification && (
-                      <span style={{
-                        fontSize: '11px',
-                        fontWeight: 'bold',
-                        color: '#0d3b66',
-                        backgroundColor: '#e2e8f0',
-                        padding: '2px 8px',
-                        borderRadius: '12px',
-                        border: '1px solid #cbd5e1'
-                      }}>
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                          color: '#0d3b66',
+                          backgroundColor: '#e2e8f0',
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          border: '1px solid #cbd5e1',
+                        }}
+                      >
                         🏷️ Class: {issue.classification}
                       </span>
                     )}
@@ -401,7 +370,6 @@ export default function IssueList() {
                     <div>📍 <b>Location:</b> {issue.location || '-'}</div>
                     <div>👤 <b>PIC:</b> {issue.pic_name || issue.pic || '-'}</div>
 
-                    {/* Editable Est. Closing Section */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                       <span>🎯 <b>Est. Closing:</b></span>
                       {editingEstClosingId === issue.id ? (
@@ -431,24 +399,13 @@ export default function IssueList() {
                           <span style={{ fontWeight: 'bold', color: '#0d3b66' }}>
                             {formatDateOnly(issue.estimated_closing)}
                           </span>
-                          {/* Hanya paparkan butang edit jika pengguna adalah pemilik isu */}
                           {isOwner && (
                             <button
                               onClick={() => {
                                 setEditingEstClosingId(issue.id);
-                                setNewEstClosingDate(
-                                  issue.estimated_closing
-                                    ? issue.estimated_closing.split('T')[0].split(' ')[0]
-                                    : ''
-                                );
+                                setNewEstClosingDate(issue.estimated_closing ? issue.estimated_closing.split('T')[0].split(' ')[0] : '');
                               }}
-                              style={{
-                                background: 'transparent',
-                                border: 'none',
-                                cursor: 'pointer',
-                                fontSize: '12px',
-                                padding: '0 2px'
-                              }}
+                              style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '12px', padding: '0 2px' }}
                               title="Edit Est. Closing"
                             >
                               ✏️
@@ -466,66 +423,54 @@ export default function IssueList() {
                   </div>
                 </div>
 
+                {/* Status Badge dengan Ikon Harvey Balls */}
                 <div style={{ borderTop: '1px solid #eee', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-                  
-                  <span style={{ 
-                    backgroundColor: statusColor, 
-                    color: textColor, 
-                    padding: '4px 10px', 
-                    borderRadius: '4px', 
-                    fontSize: '11px', 
-                    fontWeight: 'bold' 
-                  }}>
-                    {issue.status || 'Open'}
+                  <span
+                    style={{
+                      backgroundColor: statusInfo.bg,
+                      color: statusInfo.color,
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                    }}
+                  >
+                    <span style={{ fontSize: '14px', lineHeight: 1 }}>{statusInfo.icon}</span>
+                    <span>{statusInfo.text}</span>
                   </span>
 
                   <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                     {issue.file_url && (
-                      <a 
-                        href={issue.file_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                      <a
+                        href={issue.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         style={{ fontSize: '11px', color: '#0d3b66', fontWeight: 'bold', textDecoration: 'none', padding: '4px 8px', border: '1px solid #0d3b66', borderRadius: '4px', backgroundColor: '#fff' }}
                       >
                         👁️ View
                       </a>
                     )}
-                    
-                    {/* Butang Update & Delete hanya dipaparkan kepada pemilik isu sahaja */}
+
                     {isOwner ? (
                       <>
-                        <button 
+                        <button
                           onClick={() => {
                             setSelectedIssue(issue);
-                            setNewStatus(issue.status || 'In Progress');
+                            const currentVal = issue.status === 'Completed' || issue.status === 'Complete' ? 'Closed' : (issue.status || 'Open');
+                            setNewStatus(currentVal);
                             setProgressNote(issue.progress_note || '');
                           }}
-                          style={{ 
-                            border: 'none', 
-                            backgroundColor: '#e9ecef', 
-                            cursor: 'pointer', 
-                            padding: '5px 8px', 
-                            borderRadius: '4px', 
-                            fontSize: '11px', 
-                            fontWeight: 'bold', 
-                            color: '#333'
-                          }}
+                          style={{ border: 'none', backgroundColor: '#e9ecef', cursor: 'pointer', padding: '5px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', color: '#333' }}
                         >
                           ✏️ Update
                         </button>
 
-                        <button 
+                        <button
                           onClick={() => handleDeleteIssue(issue.id, issue.what_issue)}
-                          style={{ 
-                            border: 'none', 
-                            backgroundColor: '#dc3545', 
-                            color: '#fff', 
-                            cursor: 'pointer', 
-                            padding: '5px 8px', 
-                            borderRadius: '4px', 
-                            fontSize: '11px', 
-                            fontWeight: 'bold'
-                          }}
+                          style={{ border: 'none', backgroundColor: '#dc3545', color: '#fff', cursor: 'pointer', padding: '5px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}
                         >
                           🗑️ Delete
                         </button>
@@ -537,37 +482,40 @@ export default function IssueList() {
                     )}
                   </div>
                 </div>
-
               </div>
             );
           })}
         </div>
       )}
 
-      {/* Update Progress Modal */}
+      {/* Update Progress & Milestone Modal */}
       {selectedIssue && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', width: '90%', maxWidth: '420px', boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>
-            <h3 style={{ marginTop: 0, color: '#0d3b66' }}>Update Progress & Status</h3>
+          <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', width: '90%', maxWidth: '440px', boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ marginTop: 0, color: '#0d3b66' }}>Update Progress & Closing Status</h3>
             <p style={{ fontSize: '13px', color: '#666', marginBottom: '15px' }}><b>Issue:</b> {selectedIssue.what_issue}</p>
 
             <form onSubmit={handleUpdateProgress}>
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', fontWeight: 'bold', fontSize: '12px', marginBottom: '5px' }}>Status:</label>
-                <select 
-                  value={newStatus} 
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', fontSize: '12px', marginBottom: '5px' }}>
+                  Closing Status (Harvey Ball):
+                </label>
+                <select
+                  value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
-                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                  style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '13px', backgroundColor: '#fff' }}
                 >
-                  <option value="Open">Open</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Completed">Completed</option>
+                  <option value="Open">⚪ Open (0/4 - Initial / No Action)</option>
+                  <option value="In Progress (1/4)">◔ In Progress (1/4 - Plan & Root Cause)</option>
+                  <option value="In Progress (2/4)">◑ In Progress (2/4 - Action in Implementation)</option>
+                  <option value="In Progress (3/4)">◕ In Progress (3/4 - Trial & Verification)</option>
+                  <option value="Closed">⚫ Closed (4/4 - Fully Resolved & Closed)</option>
                 </select>
               </div>
 
               <div style={{ marginBottom: '15px' }}>
                 <label style={{ display: 'block', fontWeight: 'bold', fontSize: '12px', marginBottom: '5px' }}>Progress Note / Updates:</label>
-                <textarea 
+                <textarea
                   rows="3"
                   value={progressNote}
                   onChange={(e) => setProgressNote(e.target.value)}
@@ -577,26 +525,25 @@ export default function IssueList() {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setSelectedIssue(null)}
-                  style={{ padding: '8px 12px', border: 'none', backgroundColor: '#ccc', borderRadius: '4px', cursor: 'pointer' }}
+                  style={{ padding: '8px 14px', border: 'none', backgroundColor: '#ccc', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={updating}
-                  style={{ padding: '8px 12px', border: 'none', backgroundColor: '#0d3b66', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                  style={{ padding: '8px 14px', border: 'none', backgroundColor: '#0d3b66', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
-                  {updating ? 'Saving...' : 'Update'}
+                  {updating ? 'Saving...' : 'Update Status'}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-
     </div>
   );
 }
