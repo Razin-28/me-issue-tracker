@@ -2,7 +2,7 @@
 .dashboard-container {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 24px 20px;
+  padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f4f6f9;
   min-height: 100vh;
@@ -191,7 +191,6 @@
   background-image: url('DashboardAnalytics.jpg');
 }
 
-/* Betulkan nama fail imej TagMap di sini */
 .card-escalate {
   background-image: url('tagmap.jpg');
 }
@@ -217,7 +216,7 @@
   .dashboard-grid {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto;
-    gap: 16px;
+    gap: 18px;
   }
 
   .hero-card {
@@ -235,19 +234,18 @@
     padding: 16px 14px;
   }
 
+  /* Susun satu lajur dengan jarak 22px setiap kad */
   .dashboard-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-    gap: 18px; /* Jarak antara kad di telefon */
+    display: flex;
+    flex-direction: column;
+    gap: 22px; 
   }
 
   .hero-card {
-    grid-column: span 1;
-    grid-row: auto;
     border-radius: 18px;
     padding: 24px 16px;
     min-height: 270px;
-    margin-bottom: 4px;
+    width: 100%;
   }
 
   .hero-title h1 {
@@ -272,9 +270,12 @@
     font-size: 13px;
   }
 
+  /* Ketinggian dan jarak kad menu */
   .menu-card {
-    min-height: 160px; /* Saiz kad menu selesa dipandang di telefon */
+    min-height: 160px;
     border-radius: 16px;
+    width: 100%;
+    margin-bottom: 2px;
   }
 
   .card-overlay {
