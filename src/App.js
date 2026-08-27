@@ -57,7 +57,7 @@ export default function App() {
     setActiveTab('list');
   };
 
-  // 1. JIKA BELUM LOGIN: Paparkan Landing Page atau Modal Login/Register
+  // 1. JIKA BELUM LOGIN
   if (!session) {
     if (showAuthModal) {
       return (
@@ -84,7 +84,7 @@ export default function App() {
     return <LandingPage onGoToLogin={() => setShowAuthModal(true)} />;
   }
 
-  // 2. JIKA SUDAH LOGIN: Paparkan Dashboard Utama
+  // 2. JIKA SUDAH LOGIN
   const displayName = 
     userProfile?.full_name || 
     session.user?.user_metadata?.full_name || 
@@ -115,8 +115,8 @@ export default function App() {
 
       {/* Main Content View */}
       {activeTab === 'home' && (
-        <div className="dashboard-main-layout">
-          {/* Main Hero Card (Profile & Info) */}
+        <div className="dashboard-grid">
+          {/* Main Left Hero Card */}
           <div className="hero-card">
             <div className="hero-title">
               <h1>Manufacturing Engineering</h1>
@@ -133,30 +133,28 @@ export default function App() {
             </div>
           </div>
 
-          {/* Grid Menu Cards */}
-          <div className="menu-grid">
-            <div className="menu-card card-list" onClick={() => setActiveTab('list')}>
-              <div className="card-overlay">
-                <h3>List of Issues</h3>
-              </div>
+          {/* 4 Menu Cards Sejajar dalam dashboard-grid */}
+          <div className="menu-card card-list" onClick={() => setActiveTab('list')}>
+            <div className="card-overlay">
+              <h3>List of Issues</h3>
             </div>
+          </div>
 
-            <div className="menu-card card-create" onClick={() => setActiveTab('create')}>
-              <div className="card-overlay">
-                <h3>Add New Issue</h3>
-              </div>
+          <div className="menu-card card-create" onClick={() => setActiveTab('create')}>
+            <div className="card-overlay">
+              <h3>Add New Issue</h3>
             </div>
+          </div>
 
-            <div className="menu-card card-dashboard" onClick={() => setActiveTab('analytics')}>
-              <div className="card-overlay">
-                <h3>Dashboard Analytics</h3>
-              </div>
+          <div className="menu-card card-dashboard" onClick={() => setActiveTab('analytics')}>
+            <div className="card-overlay">
+              <h3>Dashboard Analytics</h3>
             </div>
+          </div>
 
-            <div className="menu-card card-escalate" onClick={() => setActiveTab('tagmap')}>
-              <div className="card-overlay">
-                <h3>TagMap Updates</h3>
-              </div>
+          <div className="menu-card card-escalate" onClick={() => setActiveTab('tagmap')}>
+            <div className="card-overlay">
+              <h3>TagMap Updates</h3>
             </div>
           </div>
         </div>
