@@ -49,7 +49,7 @@
 .hero-card {
   grid-row: span 2;
   background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.65)), 
-              url('/ME.jpg') center/cover no-repeat; 
+              url('ME.jpg') center/cover no-repeat; 
   border-top-left-radius: 40px;
   border-bottom-left-radius: 40px;
   border-top-right-radius: 12px;
@@ -165,7 +165,7 @@
   font-weight: 600;
 }
 
-/* Background Images for Cards */
+/* Background Images for Cards (Relative path to src/) */
 .card-list {
   background-image: url('ListIssues.jpg');
 }
@@ -222,11 +222,13 @@
 
   .dashboard-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
     gap: 12px;
   }
 
   .hero-card {
     grid-column: span 1;
+    grid-row: auto;
     border-radius: 16px;
     padding: 20px 15px;
     min-height: 260px;
