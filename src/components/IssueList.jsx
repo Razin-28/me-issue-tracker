@@ -154,7 +154,6 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
     return dateStr;
   };
 
-  // Helper function untuk ikon Harvey Balls & warna status
   const getStatusDetails = (status) => {
     switch (status) {
       case 'In Progress (1/4)':
@@ -200,7 +199,7 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
     setUpdating(false);
   };
 
-  // Logik Penapisan Menyeluruh
+  // Logik Penapisan
   const filteredIssues = issues.filter((issue) => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
@@ -267,7 +266,7 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
   });
 
   return (
-    <div style={{ padding: '10px 20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
+    <div style={{ padding: '10px 20px', maxWidth: '1280px', margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
       
       {/* Header Bar */}
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px', backgroundColor: '#0d3b66', padding: '15px 20px', borderRadius: '8px', color: '#fff' }}>
@@ -275,22 +274,22 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
       </div>
 
       {/* Search & Filter Section */}
-      <div style={{ backgroundColor: '#fff', padding: '16px 20px', borderRadius: '8px', boxShadow: '0 2px 6px rgba(0,0,0,0.06)', marginBottom: '25px' }}>
+      <div style={{ backgroundColor: '#fff', padding: '16px 18px', borderRadius: '8px', boxShadow: '0 2px 6px rgba(0,0,0,0.06)', marginBottom: '25px' }}>
         
         {/* Baris 1: Main Search */}
         <div style={{ marginBottom: '14px' }}>
-          <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '6px' }}>
+          <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '6px' }}>
             🔍 Search
           </label>
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{
                 width: '100%',
-                padding: '10px 35px 10px 12px',
+                padding: '9px 35px 9px 12px',
                 borderRadius: '6px',
                 border: '1px solid #ccc',
                 fontSize: '13px',
@@ -318,26 +317,32 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
           </div>
         </div>
 
-        {/* Baris 2: 7 Grid Filters (Date, Status, Class, Location, Group, Name, PIC) */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
-          
+        {/* Baris 2: 7 Dropdown Filters Selari */}
+        <div 
+          style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', 
+            gap: '8px',
+            alignItems: 'end'
+          }}
+        >
           {/* 1. Date */}
-          <div>
-            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
+          <div style={{ minWidth: '0' }}>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px', whiteSpace: 'nowrap' }}>
               📅 Date:
             </label>
-            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
               <input
                 type="date"
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
-                style={{ width: '100%', padding: '7px 8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', boxSizing: 'border-box', cursor: 'pointer' }}
+                style={{ width: '100%', padding: '6px 4px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '11px', boxSizing: 'border-box', cursor: 'pointer' }}
               />
               {dateFilter && (
                 <button
                   onClick={() => setDateFilter('')}
                   title="Clear Date"
-                  style={{ backgroundColor: '#dc3545', color: '#fff', border: 'none', borderRadius: '4px', padding: '6px 8px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
+                  style={{ backgroundColor: '#dc3545', color: '#fff', border: 'none', borderRadius: '4px', padding: '5px 6px', fontSize: '10px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
                   ✕
                 </button>
@@ -346,14 +351,14 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
           </div>
 
           {/* 2. Status */}
-          <div>
-            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
+          <div style={{ minWidth: '0' }}>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px', whiteSpace: 'nowrap' }}>
               📌 Status:
             </label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              style={{ width: '100%', padding: '7px 8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
+              style={{ width: '100%', padding: '6px 4px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '11px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
             >
               <option value="All">All Statuses</option>
               <option value="Open">⚪ Open (0/4)</option>
@@ -364,15 +369,15 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
             </select>
           </div>
 
-          {/* 3. Class (Terletak di sebelah kanan Status) */}
-          <div>
-            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
+          {/* 3. Class */}
+          <div style={{ minWidth: '0' }}>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px', whiteSpace: 'nowrap' }}>
               🏷️ Class:
             </label>
             <select
               value={classificationFilter}
               onChange={(e) => setClassificationFilter(e.target.value)}
-              style={{ width: '100%', padding: '7px 8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
+              style={{ width: '100%', padding: '6px 4px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '11px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
             >
               <option value="All">All Classes</option>
               <option value="A">Class A</option>
@@ -382,14 +387,14 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
           </div>
 
           {/* 4. Location */}
-          <div>
-            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
+          <div style={{ minWidth: '0' }}>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px', whiteSpace: 'nowrap' }}>
               📍 Location:
             </label>
             <select
               value={locationFilter}
               onChange={(e) => setLocationFilter(e.target.value)}
-              style={{ width: '100%', padding: '7px 8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
+              style={{ width: '100%', padding: '6px 4px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '11px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
             >
               <option value="All">All Locations</option>
               {uniqueLocations.map((loc) => (
@@ -399,14 +404,14 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
           </div>
 
           {/* 5. Group */}
-          <div>
-            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
+          <div style={{ minWidth: '0' }}>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px', whiteSpace: 'nowrap' }}>
               👥 Group:
             </label>
             <select
               value={groupFilter}
               onChange={(e) => setGroupFilter(e.target.value)}
-              style={{ width: '100%', padding: '7px 8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
+              style={{ width: '100%', padding: '6px 4px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '11px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
             >
               <option value="All">All Groups</option>
               {uniqueGroups.map((grp) => (
@@ -416,14 +421,14 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
           </div>
 
           {/* 6. Name */}
-          <div>
-            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
+          <div style={{ minWidth: '0' }}>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px', whiteSpace: 'nowrap' }}>
               👤 Name:
             </label>
             <select
               value={nameFilter}
               onChange={(e) => setNameFilter(e.target.value)}
-              style={{ width: '100%', padding: '7px 8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
+              style={{ width: '100%', padding: '6px 4px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '11px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
             >
               <option value="All">All Names</option>
               {uniqueNames.map((nm) => (
@@ -433,14 +438,14 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
           </div>
 
           {/* 7. PIC */}
-          <div>
-            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
+          <div style={{ minWidth: '0' }}>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px', whiteSpace: 'nowrap' }}>
               👤 PIC:
             </label>
             <select
               value={picFilter}
               onChange={(e) => setPicFilter(e.target.value)}
-              style={{ width: '100%', padding: '7px 8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
+              style={{ width: '100%', padding: '6px 4px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '11px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
             >
               <option value="All">All PICs</option>
               {uniquePICs.map((p) => (
@@ -581,7 +586,6 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
                   </div>
                 </div>
 
-                {/* Status Badge dengan Ikon Harvey Balls */}
                 <div style={{ borderTop: '1px solid #eee', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                   <span
                     style={{
