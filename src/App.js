@@ -11,18 +11,51 @@ import DashboardAnalytics from './components/DashboardAnalytics';
 export default function App() {
   const [session, setSession] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
-  const [activeTab, setActiveTab] = useState('home');
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+  // Helper untuk membaca tab semasa daripada URL Hash
+  const getTabFromHash = () => {
+    const hash = window.location.hash.replace('#/', '');
+    const validTabs = ['home', 'create', 'list', 'analytics', 'tagmap'];
+    return validTabs.includes(hash) ? hash : 'home';
+  };
+
+  const [activeTab, setActiveTab] = useState(getTabFromHash);
+
+  // 1. Dengar perubahan Back / Forward daripada Browser & Gesture Telefon
   useEffect(() => {
-    // 1. Semak sesi log masuk awal dari Supabase
+    const handleHashChange = () => {
+      setActiveTab(getTabFromHash());
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // 2. Fungsi berpusat untuk menukar tab & menambah rekod sejarah browser
+  const navigateTo = (tabName) => {
+    window.location.hash = `#/${tabName}`;
+    setActiveTab(tabName);
+  };
+
+  // 3. Fungsi berpusat untuk kembali ke Dashboard / halaman sebelumnya
+  const handleBackNavigation = () => {
+    if (window.location.hash && window.location.hash !== '#/home') {
+      window.history.back();
+    } else {
+      navigateTo('home');
+    }
+  };
+
+  useEffect(() => {
+    // Semak sesi log masuk awal dari Supabase
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) fetchProfile(session.user.id);
     });
 
-    // 2. Dengar perubahan status auth (Login / Logout)
+    // Dengar perubahan status auth (Login / Logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) {
@@ -48,13 +81,13 @@ export default function App() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setActiveTab('home');
+    navigateTo('home');
     setShowAuthModal(false);
   };
 
   const handleIssueCreated = () => {
     setRefreshTrigger((prev) => prev + 1);
-    setActiveTab('list');
+    navigateTo('list');
   };
 
   // 1. JIKA BELUM LOGIN
@@ -106,7 +139,7 @@ export default function App() {
         {activeTab !== 'home' && (
           <button 
             className="back-btn"
-            onClick={() => setActiveTab('home')}
+            onClick={handleBackNavigation}
           >
             ⬅️ Back to Dashboard
           </button>
@@ -134,25 +167,25 @@ export default function App() {
           </div>
 
           {/* 4 Menu Cards Sejajar dalam dashboard-grid */}
-          <div className="menu-card card-list" onClick={() => setActiveTab('list')}>
+          <div className="menu-card card-list" onClick={() => navigateTo('list')}>
             <div className="card-overlay">
               <h3>List of Issues</h3>
             </div>
           </div>
 
-          <div className="menu-card card-create" onClick={() => setActiveTab('create')}>
+          <div className="menu-card card-create" onClick={() => navigateTo('create')}>
             <div className="card-overlay">
               <h3>Add New Issue</h3>
             </div>
           </div>
 
-          <div className="menu-card card-dashboard" onClick={() => setActiveTab('analytics')}>
+          <div className="menu-card card-dashboard" onClick={() => navigateTo('analytics')}>
             <div className="card-overlay">
               <h3>Dashboard Analytics</h3>
             </div>
           </div>
 
-          <div className="menu-card card-escalate" onClick={() => setActiveTab('tagmap')}>
+          <div className="menu-card card-escalate" onClick={() => navigateTo('tagmap')}>
             <div className="card-overlay">
               <h3>TagMap Updates</h3>
             </div>
@@ -165,7 +198,7 @@ export default function App() {
         <div>
           <CreateIssue 
             userProfile={{ id: session.user.id, department: userProfile?.department || 'ME', staff_id: staffIdDisplay }} 
-            onBackToDashboard={() => setActiveTab('home')}
+            onBackToDashboard={handleBackNavigation}
             onIssueCreated={handleIssueCreated} 
           />
         </div>
@@ -175,7 +208,7 @@ export default function App() {
       {activeTab === 'list' && (
         <div>
           <IssueList 
-            onBackToDashboard={() => setActiveTab('home')}
+            onBackToDashboard={handleBackNavigation}
             userProfile={{ id: session.user.id }} 
             refreshTrigger={refreshTrigger} 
           />
@@ -185,14 +218,14 @@ export default function App() {
       {/* View: Dashboard Analytics */}
       {activeTab === 'analytics' && (
         <div>
-          <DashboardAnalytics />
+          <DashboardAnalytics onBack={handleBackNavigation} />
         </div>
       )}
 
       {/* View: TagMap Updates Table */}
       {activeTab === 'tagmap' && (
         <div>
-          <TagMapUpdates onBack={() => setActiveTab('home')} />
+          <TagMapUpdates onBack={handleBackNavigation} />
         </div>
       )}
 
