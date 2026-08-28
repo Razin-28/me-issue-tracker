@@ -11,6 +11,7 @@ export default function Auth({ onLoginSuccess }) {
   const [staffId, setStaffId] = useState('');
   const [password, setPassword] = useState('');
   const [departmentCode, setDepartmentCode] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -153,19 +154,48 @@ export default function Auth({ onLoginSuccess }) {
           </div>
         )}
 
-        {/* 4. Password */}
+        {/* 4. Password dengan Toggle Mata */}
         <div>
           <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
             Password:
           </label>
-          <input
-            type="password"
-            required
-            placeholder="Enter your Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
-          />
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              required
+              placeholder="Enter your Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '9px 40px 9px 9px',
+                borderRadius: '5px',
+                border: '1px solid #ccc',
+                boxSizing: 'border-box',
+                outline: 'none'
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              style={{
+                position: 'absolute',
+                right: '10px',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '16px',
+                padding: '0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#666'
+              }}
+            >
+              {showPassword ? '🙈' : '👁️'}
+            </button>
+          </div>
         </div>
 
         {/* 5. Department Code Passcode (Sign Up Only) */}
@@ -212,6 +242,7 @@ export default function Auth({ onLoginSuccess }) {
           type="button"
           onClick={() => {
             setIsSignUp(!isSignUp);
+            setShowPassword(false);
             setErrorMessage('');
             setSuccessMessage('');
           }}
