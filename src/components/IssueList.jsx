@@ -143,7 +143,7 @@ export default function IssueList() {
       case 'In Progress (3/4)':
         return { icon: '◕', text: 'In Progress 3/4', bg: '#0284c7', color: '#fff' };
       case 'In Progress':
-        return { icon: '◑', text: 'In Progress 2/4', bg: '#f59e0b', color: '#000' };
+        return { icon: '◑', text: 'In Progress', bg: '#f59e0b', color: '#000' };
       case 'Closed':
       case 'Completed':
       case 'Complete':
@@ -197,7 +197,7 @@ export default function IssueList() {
       if (statusFilter === 'Closed') {
         matchesStatus = issue.status === 'Closed' || issue.status === 'Completed' || issue.status === 'Complete';
       } else if (statusFilter === 'In Progress') {
-        matchesStatus = issue.status?.startsWith('In Progress');
+        matchesStatus = Boolean(issue.status && issue.status.includes('In Progress'));
       } else {
         matchesStatus = issue.status === statusFilter;
       }
@@ -272,9 +272,7 @@ export default function IssueList() {
             >
               <option value="All">All Statuses</option>
               <option value="Open">⚪ Open (0/4)</option>
-              <option value="In Progress (1/4)">◔ In Progress (1/4)</option>
-              <option value="In Progress (2/4)">◑ In Progress (2/4)</option>
-              <option value="In Progress (3/4)">◕ In Progress (3/4)</option>
+              <option value="In Progress">◑ In Progress</option>
               <option value="Closed">⚫ Closed (4/4)</option>
             </select>
           </div>
