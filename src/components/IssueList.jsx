@@ -457,7 +457,9 @@ export default function IssueList() {
                         <button
                           onClick={() => {
                             setSelectedIssue(issue);
-                            const currentVal = issue.status === 'Completed' || issue.status === 'Complete' ? 'Closed' : (issue.status || 'Open');
+                            const currentVal = issue.status === 'Completed' || issue.status === 'Complete' 
+                              ? 'Closed' 
+                              : (issue.status?.includes('In Progress') ? 'In Progress' : (issue.status || 'Open'));
                             setNewStatus(currentVal);
                             setProgressNote(issue.progress_note || '');
                           }}
@@ -496,18 +498,16 @@ export default function IssueList() {
             <form onSubmit={handleUpdateProgress}>
               <div style={{ marginBottom: '14px' }}>
                 <label style={{ display: 'block', fontWeight: 'bold', fontSize: '12px', marginBottom: '5px' }}>
-                  Closing Status (Harvey Ball):
+                  Closing Status:
                 </label>
                 <select
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
                   style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '13px', backgroundColor: '#fff' }}
                 >
-                  <option value="Open">⚪ Open (0/4)</option>
-                  <option value="In Progress (1/4)">◔ In Progress (1/4)</option>
-                  <option value="In Progress (2/4)">◑ In Progress (2/4)</option>
-                  <option value="In Progress (3/4)">◕ In Progress (3/4)</option>
-                  <option value="Closed">⚫ Closed (4/4)</option>
+                  <option value="Open">⚪ Open</option>
+                  <option value="In Progress">◑ In Progress</option>
+                  <option value="Closed">⚫ Closed</option>
                 </select>
               </div>
 
