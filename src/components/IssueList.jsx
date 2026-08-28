@@ -199,7 +199,7 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
     setUpdating(false);
   };
 
-  // Logik Penapisan
+  // Logik Penapisan (Filter 'In Progress' merangkumi semua fasa In Progress)
   const filteredIssues = issues.filter((issue) => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
@@ -350,7 +350,7 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
             </div>
           </div>
 
-          {/* 2. Status */}
+          {/* 2. Status (Diringkaskan kepada Open, In Progress, Closed) */}
           <div style={{ minWidth: '0' }}>
             <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px', whiteSpace: 'nowrap' }}>
               📌 Status:
@@ -362,9 +362,7 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
             >
               <option value="All">All Statuses</option>
               <option value="Open">⚪ Open (0/4)</option>
-              <option value="In Progress (1/4)">◔ In Progress (1/4)</option>
-              <option value="In Progress (2/4)">◑ In Progress (2/4)</option>
-              <option value="In Progress (3/4)">◕ In Progress (3/4)</option>
+              <option value="In Progress">◑ In Progress</option>
               <option value="Closed">⚫ Closed (4/4)</option>
             </select>
           </div>
