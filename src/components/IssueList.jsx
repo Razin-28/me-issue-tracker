@@ -1,16 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
 
-export default function IssueList() {
+export default function IssueList({ onBackToDashboard, refreshTrigger }) {
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Filter States
+  // Filter States berasaskan susun atur gambar
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [classificationFilter, setClassificationFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [locationFilter, setLocationFilter] = useState('All');
+  const [groupFilter, setGroupFilter] = useState('All');
+  const [nameFilter, setNameFilter] = useState('All');
+  const [picFilter, setPicFilter] = useState('All');
 
   // Est. Closing Inline Edit
   const [editingEstClosingId, setEditingEstClosingId] = useState(null);
@@ -48,7 +51,24 @@ export default function IssueList() {
 
   useEffect(() => {
     fetchIssues();
-  }, []);
+  }, [refreshTrigger]);
+
+  // Ekstrak senarai unik secara dinamik untuk dropdown
+  const uniqueLocations = useMemo(() => {
+    return Array.from(new Set(issues.map((i) => i.location).filter(Boolean))).sort();
+  }, [issues]);
+
+  const uniqueGroups = useMemo(() => {
+    return Array.from(new Set(issues.map((i) => i.group_name).filter(Boolean))).sort();
+  }, [issues]);
+
+  const uniqueNames = useMemo(() => {
+    return Array.from(new Set(issues.map((i) => i.staff_name || i.staff_id).filter(Boolean))).sort();
+  }, [issues]);
+
+  const uniquePICs = useMemo(() => {
+    return Array.from(new Set(issues.map((i) => i.pic_name || i.pic).filter(Boolean))).sort();
+  }, [issues]);
 
   const handleDeleteIssue = async (issueId, issueTitle) => {
     const confirmDelete = window.confirm(`Are you sure you want to delete "${issueTitle || 'this issue'}"?`);
@@ -179,6 +199,7 @@ export default function IssueList() {
     setUpdating(false);
   };
 
+  // Logik Penapisan Menyeluruh
   const filteredIssues = issues.filter((issue) => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
@@ -192,22 +213,6 @@ export default function IssueList() {
       (issue.pic_name && issue.pic_name.toLowerCase().includes(searchLower)) ||
       (issue.pic && issue.pic.toLowerCase().includes(searchLower));
 
-    let matchesStatus = true;
-    if (statusFilter !== 'All') {
-      if (statusFilter === 'Closed') {
-        matchesStatus = issue.status === 'Closed' || issue.status === 'Completed' || issue.status === 'Complete';
-      } else if (statusFilter === 'In Progress') {
-        matchesStatus = Boolean(issue.status && issue.status.includes('In Progress'));
-      } else {
-        matchesStatus = issue.status === statusFilter;
-      }
-    }
-
-    let matchesClassification = true;
-    if (classificationFilter !== 'All') {
-      matchesClassification = issue.classification === classificationFilter;
-    }
-
     let matchesDate = true;
     if (dateFilter) {
       const issueDateStr = issue.date_time || issue.created_at;
@@ -219,56 +224,130 @@ export default function IssueList() {
       matchesDate = issueFormattedDate === dateFilter || estClosingFormattedDate === dateFilter;
     }
 
-    return matchesSearch && matchesStatus && matchesClassification && matchesDate;
+    let matchesStatus = true;
+    if (statusFilter !== 'All') {
+      if (statusFilter === 'Closed') {
+        matchesStatus = issue.status === 'Closed' || issue.status === 'Completed' || issue.status === 'Complete';
+      } else if (statusFilter === 'In Progress') {
+        matchesStatus = Boolean(issue.status && issue.status.includes('In Progress'));
+      } else {
+        matchesStatus = issue.status === statusFilter;
+      }
+    }
+
+    let matchesLocation = true;
+    if (locationFilter !== 'All') {
+      matchesLocation = issue.location === locationFilter;
+    }
+
+    let matchesGroup = true;
+    if (groupFilter !== 'All') {
+      matchesGroup = issue.group_name === groupFilter;
+    }
+
+    let matchesName = true;
+    if (nameFilter !== 'All') {
+      const combinedName = issue.staff_name || issue.staff_id;
+      matchesName = combinedName === nameFilter;
+    }
+
+    let matchesPic = true;
+    if (picFilter !== 'All') {
+      const combinedPic = issue.pic_name || issue.pic;
+      matchesPic = combinedPic === picFilter;
+    }
+
+    return matchesSearch && matchesDate && matchesStatus && matchesLocation && matchesGroup && matchesName && matchesPic;
   });
 
   return (
     <div style={{ padding: '10px 20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
+      
       {/* Header Bar */}
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px', backgroundColor: '#0d3b66', padding: '15px 20px', borderRadius: '8px', color: '#fff' }}>
         <h2 style={{ margin: 0, fontSize: '22px', textAlign: 'center' }}>Issue List</h2>
       </div>
 
-      {/* Search & Filter Bar */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', marginBottom: '20px', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', padding: '12px 16px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '1', minWidth: '220px' }}>
-          <span style={{ fontSize: '16px' }}>🔍</span>
-          <input
-            type="text"
-            placeholder="Search issue, group, name, location, PIC..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ width: '100%', padding: '8px 12px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '13px', outline: 'none' }}
-          />
-          {searchTerm && (
-            <button onClick={() => setSearchTerm('')} style={{ border: 'none', backgroundColor: 'transparent', cursor: 'pointer', color: '#888', fontWeight: 'bold' }}>
-              ✖
-            </button>
-          )}
+      {/* Search & Filter Section (Mengikut Rekaan Gambar) */}
+      <div style={{ backgroundColor: '#fff', padding: '16px 20px', borderRadius: '8px', boxShadow: '0 2px 6px rgba(0,0,0,0.06)', marginBottom: '25px' }}>
+        
+        {/* Baris 1: Main Search */}
+        <div style={{ marginBottom: '14px' }}>
+          <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '6px' }}>
+            🔍 Search
+          </label>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <input
+              type="text"
+              placeholder="Search keyword, issue description, PIC, location..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px 35px 10px 12px',
+                borderRadius: '6px',
+                border: '1px solid #ccc',
+                fontSize: '13px',
+                boxSizing: 'border-box',
+                outline: 'none'
+              }}
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#888',
+                  fontWeight: 'bold',
+                  fontSize: '14px'
+                }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#333' }}>📅 Date:</span>
-          <input
-            type="date"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            style={{ padding: '6px 10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', cursor: 'pointer' }}
-          />
-          {dateFilter && (
-            <button onClick={() => setDateFilter('')} style={{ border: 'none', backgroundColor: '#dc3545', color: '#fff', borderRadius: '4px', padding: '4px 8px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}>
-              Clear
-            </button>
-          )}
-        </div>
+        {/* Baris 2: 6 Grid Filters (Date, Status, Location, Group, Name, PIC) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+          
+          {/* 1. Date */}
+          <div>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
+              📅 Date:
+            </label>
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              <input
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                style={{ width: '100%', padding: '7px 8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', boxSizing: 'border-box', cursor: 'pointer' }}
+              />
+              {dateFilter && (
+                <button
+                  onClick={() => setDateFilter('')}
+                  title="Clear Date"
+                  style={{ backgroundColor: '#dc3545', color: '#fff', border: 'none', borderRadius: '4px', padding: '6px 8px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#333' }}>📌 Status:</span>
+          {/* 2. Status */}
+          <div>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
+              📌 Status:
+            </label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              style={{ padding: '6px 10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', backgroundColor: '#fff', cursor: 'pointer' }}
+              style={{ width: '100%', padding: '7px 8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
             >
               <option value="All">All Statuses</option>
               <option value="Open">⚪ Open (0/4)</option>
@@ -277,22 +356,78 @@ export default function IssueList() {
             </select>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#333' }}>🏷️ Class:</span>
+          {/* 3. Location */}
+          <div>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
+              📍 Location:
+            </label>
             <select
-              value={classificationFilter}
-              onChange={(e) => setClassificationFilter(e.target.value)}
-              style={{ padding: '6px 10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', backgroundColor: '#fff', cursor: 'pointer' }}
+              value={locationFilter}
+              onChange={(e) => setLocationFilter(e.target.value)}
+              style={{ width: '100%', padding: '7px 8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
             >
-              <option value="All">All Classes</option>
-              <option value="A">Class A</option>
-              <option value="B">Class B</option>
-              <option value="C">Class C</option>
+              <option value="All">All Locations</option>
+              {uniqueLocations.map((loc) => (
+                <option key={loc} value={loc}>{loc}</option>
+              ))}
             </select>
           </div>
+
+          {/* 4. Group */}
+          <div>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
+              👥 Group:
+            </label>
+            <select
+              value={groupFilter}
+              onChange={(e) => setGroupFilter(e.target.value)}
+              style={{ width: '100%', padding: '7px 8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
+            >
+              <option value="All">All Groups</option>
+              {uniqueGroups.map((grp) => (
+                <option key={grp} value={grp}>{grp}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* 5. Name */}
+          <div>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
+              👤 Name:
+            </label>
+            <select
+              value={nameFilter}
+              onChange={(e) => setNameFilter(e.target.value)}
+              style={{ width: '100%', padding: '7px 8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
+            >
+              <option value="All">All Names</option>
+              {uniqueNames.map((nm) => (
+                <option key={nm} value={nm}>{nm}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* 6. PIC */}
+          <div>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
+              👤 PIC:
+            </label>
+            <select
+              value={picFilter}
+              onChange={(e) => setPicFilter(e.target.value)}
+              style={{ width: '100%', padding: '7px 8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
+            >
+              <option value="All">All PICs</option>
+              {uniquePICs.map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+          </div>
+
         </div>
       </div>
 
+      {/* Paparan Senarai Isu */}
       {loading ? (
         <p style={{ textAlign: 'center', padding: '40px' }}>Loading issues...</p>
       ) : filteredIssues.length === 0 ? (
