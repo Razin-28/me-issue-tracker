@@ -8,7 +8,7 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
   const [location, setLocation] = useState('');
   const [pic, setPic] = useState('');
   const [dateTime, setDateTime] = useState('');
-  const [classification, setClassification] = useState('B');
+  const [classification, setClassification] = useState('');
   const [estimatedClosing, setEstimatedClosing] = useState('');
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -67,13 +67,13 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
           pic_name: pic,
           pic_email: staffEmail,
           date_time: dateTime || null,
-          classification: classification, // Nilai yang dihantar tetap 'A', 'B', atau 'C'
+          classification: classification,
           estimated_closing: estimatedClosing,
           staff_name: autoStaffName,
           staff_id: user?.user_metadata?.staff_id || null,
           file_url: fileUrl,
-          user_id: user.id,          // Disimpan secara automatik untuk kawalan hak milik
-          user_email: user.email,    // Disimpan secara automatik untuk kawalan hak milik
+          user_id: user.id,
+          user_email: user.email,
           status: 'Open',
         },
       ]);
@@ -184,13 +184,24 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
         <div>
           <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Issue Classification:</label>
           <select 
+            required
             value={classification} 
             onChange={(e) => setClassification(e.target.value)} 
-            style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box', backgroundColor: '#fff', cursor: 'pointer' }}
+            style={{ 
+              width: '100%', 
+              padding: '10px', 
+              borderRadius: '5px', 
+              border: '1px solid #ccc', 
+              boxSizing: 'border-box', 
+              backgroundColor: '#fff', 
+              cursor: 'pointer',
+              color: classification ? '#000' : '#888'
+            }}
           >
-            <option value="A">Class A - Safety/Quality Issue</option>
-            <option value="B">Class B - Cause to Breakdown/Downtime Production</option>
-            <option value="C">Class C - Opportunity for Improvement</option>
+            <option value="" disabled hidden>Choose Classification</option>
+            <option value="A" style={{ color: '#000' }}>Class A - Safety/Quality Issue</option>
+            <option value="B" style={{ color: '#000' }}>Class B - Cause to Breakdown/Downtime Production</option>
+            <option value="C" style={{ color: '#000' }}>Class C - Opportunity for Improvement</option>
           </select>
         </div>
 
