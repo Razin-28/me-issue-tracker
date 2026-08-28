@@ -6,10 +6,11 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Filter States berasaskan susun atur gambar
+  // Filter States
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [classificationFilter, setClassificationFilter] = useState('All');
   const [locationFilter, setLocationFilter] = useState('All');
   const [groupFilter, setGroupFilter] = useState('All');
   const [nameFilter, setNameFilter] = useState('All');
@@ -235,6 +236,11 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
       }
     }
 
+    let matchesClassification = true;
+    if (classificationFilter !== 'All') {
+      matchesClassification = issue.classification === classificationFilter;
+    }
+
     let matchesLocation = true;
     if (locationFilter !== 'All') {
       matchesLocation = issue.location === locationFilter;
@@ -257,7 +263,7 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
       matchesPic = combinedPic === picFilter;
     }
 
-    return matchesSearch && matchesDate && matchesStatus && matchesLocation && matchesGroup && matchesName && matchesPic;
+    return matchesSearch && matchesDate && matchesStatus && matchesClassification && matchesLocation && matchesGroup && matchesName && matchesPic;
   });
 
   return (
@@ -268,7 +274,7 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
         <h2 style={{ margin: 0, fontSize: '22px', textAlign: 'center' }}>Issue List</h2>
       </div>
 
-      {/* Search & Filter Section (Mengikut Rekaan Gambar) */}
+      {/* Search & Filter Section */}
       <div style={{ backgroundColor: '#fff', padding: '16px 20px', borderRadius: '8px', boxShadow: '0 2px 6px rgba(0,0,0,0.06)', marginBottom: '25px' }}>
         
         {/* Baris 1: Main Search */}
@@ -312,8 +318,8 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
           </div>
         </div>
 
-        {/* Baris 2: 6 Grid Filters (Date, Status, Location, Group, Name, PIC) */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+        {/* Baris 2: 7 Grid Filters (Date, Status, Class, Location, Group, Name, PIC) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
           
           {/* 1. Date */}
           <div>
@@ -351,12 +357,31 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
             >
               <option value="All">All Statuses</option>
               <option value="Open">⚪ Open (0/4)</option>
-              <option value="In Progress">◑ In Progress</option>
+              <option value="In Progress (1/4)">◔ In Progress (1/4)</option>
+              <option value="In Progress (2/4)">◑ In Progress (2/4)</option>
+              <option value="In Progress (3/4)">◕ In Progress (3/4)</option>
               <option value="Closed">⚫ Closed (4/4)</option>
             </select>
           </div>
 
-          {/* 3. Location */}
+          {/* 3. Class (Terletak di sebelah kanan Status) */}
+          <div>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
+              🏷️ Class:
+            </label>
+            <select
+              value={classificationFilter}
+              onChange={(e) => setClassificationFilter(e.target.value)}
+              style={{ width: '100%', padding: '7px 8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '12px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
+            >
+              <option value="All">All Classes</option>
+              <option value="A">Class A</option>
+              <option value="B">Class B</option>
+              <option value="C">Class C</option>
+            </select>
+          </div>
+
+          {/* 4. Location */}
           <div>
             <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
               📍 Location:
@@ -373,7 +398,7 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
             </select>
           </div>
 
-          {/* 4. Group */}
+          {/* 5. Group */}
           <div>
             <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
               👥 Group:
@@ -390,7 +415,7 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
             </select>
           </div>
 
-          {/* 5. Name */}
+          {/* 6. Name */}
           <div>
             <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
               👤 Name:
@@ -407,7 +432,7 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
             </select>
           </div>
 
-          {/* 6. PIC */}
+          {/* 7. PIC */}
           <div>
             <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px' }}>
               👤 PIC:
