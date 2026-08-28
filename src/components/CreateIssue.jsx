@@ -137,7 +137,7 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
             value={groupName} 
             onChange={(e) => setGroupName(e.target.value)} 
             required
-            placeholder="Enter Group (e.g. Line 1, Assembly, Machining)" 
+            placeholder="Enter Group" 
             style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
           />
         </div>
@@ -163,7 +163,7 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
             value={pic} 
             onChange={(e) => setPic(e.target.value)} 
             required 
-            placeholder="Enter PIC (e.g. Ikhwan ME)"
+            placeholder="Enter Person in Charge"
             style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
           />
         </div>
