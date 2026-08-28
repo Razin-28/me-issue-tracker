@@ -26,12 +26,24 @@ export default function App() {
   // 1. Dengar perubahan Back / Forward daripada Browser & Gesture Telefon
   useEffect(() => {
     const handleHashChange = () => {
-      setActiveTab(getTabFromHash());
+      const currentTab = getTabFromHash();
+      setActiveTab(currentTab);
+
+      // Pengendalian khas jika pengguna tekan Back semasa di Dashboard (home)
+      if (currentTab === 'home' && session) {
+        const confirmExit = window.confirm('Adakah anda pasti mahu keluar / log keluar dari sistem?');
+        if (confirmExit) {
+          handleLogout();
+        } else {
+          // Kekalkan pengguna di Dashboard jika mereka tekan Cancel
+          window.location.hash = '#/home';
+        }
+      }
     };
 
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+  }, [session]);
 
   // 2. Fungsi berpusat untuk menukar tab & menambah rekod sejarah browser
   const navigateTo = (tabName) => {
@@ -52,7 +64,12 @@ export default function App() {
     // Semak sesi log masuk awal dari Supabase
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session) fetchProfile(session.user.id);
+      if (session) {
+        fetchProfile(session.user.id);
+        if (!window.location.hash) {
+          window.location.hash = '#/home';
+        }
+      }
     });
 
     // Dengar perubahan status auth (Login / Logout)
@@ -61,6 +78,9 @@ export default function App() {
       if (session) {
         fetchProfile(session.user.id);
         setShowAuthModal(false);
+        if (!window.location.hash) {
+          window.location.hash = '#/home';
+        }
       } else {
         setUserProfile(null);
       }
@@ -81,7 +101,8 @@ export default function App() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigateTo('home');
+    window.location.hash = '';
+    setActiveTab('home');
     setShowAuthModal(false);
   };
 
@@ -133,7 +154,13 @@ export default function App() {
     <div className="dashboard-container">
       {/* Top Navigation */}
       <div className="top-nav">
-        <button className="exit-btn" onClick={handleLogout}>
+        <button 
+          className="exit-btn" 
+          onClick={() => {
+            const confirmExit = window.confirm('Adakah anda pasti mahu log keluar / keluar?');
+            if (confirmExit) handleLogout();
+          }}
+        >
           <span style={{ fontSize: '20px' }}>🚪</span> Exit
         </button>
         {activeTab !== 'home' && (
