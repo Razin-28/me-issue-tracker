@@ -279,7 +279,7 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <input
               type="text"
-              placeholder="Search keyword, issue description, PIC, location..."
+              placeholder="Search"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{
