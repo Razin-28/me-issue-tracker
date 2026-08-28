@@ -18,25 +18,23 @@ export default function App() {
   const getTabFromHash = () => {
     const hash = window.location.hash.replace('#/', '');
     const validTabs = ['home', 'create', 'list', 'analytics', 'tagmap'];
-    return validTabs.includes(hash) ? hash : 'home';
+    return validTabs.includes(hash) ? hash : (hash === '' ? 'landing' : 'home');
   };
 
-  const [activeTab, setActiveTab] = useState(getTabFromHash);
+  const [activeTab, setActiveTab] = useState('home');
 
   // 1. Dengar perubahan Back / Forward daripada Browser & Gesture Telefon
   useEffect(() => {
     const handleHashChange = () => {
-      const currentTab = getTabFromHash();
-      setActiveTab(currentTab);
-
-      // Pengendalian khas jika pengguna tekan Back semasa di Dashboard (home)
-      if (currentTab === 'home' && session) {
-        const confirmExit = window.confirm('Adakah anda pasti mahu keluar / log keluar dari sistem?');
-        if (confirmExit) {
-          handleLogout();
-        } else {
-          // Kekalkan pengguna di Dashboard jika mereka tekan Cancel
-          window.location.hash = '#/home';
+      const currentHash = window.location.hash.replace('#/', '');
+      
+      // Jika tekan back semasa di Dashboard (home), bawa terus ke Homepage / Login (Logout)
+      if (!currentHash || currentHash === '') {
+        handleLogout();
+      } else {
+        const validTabs = ['home', 'create', 'list', 'analytics', 'tagmap'];
+        if (validTabs.includes(currentHash)) {
+          setActiveTab(currentHash);
         }
       }
     };
@@ -45,16 +43,16 @@ export default function App() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [session]);
 
-  // 2. Fungsi berpusat untuk menukar tab & menambah rekod sejarah browser
+  // 2. Fungsi berpusat untuk buka mana-mana tab
   const navigateTo = (tabName) => {
     window.location.hash = `#/${tabName}`;
     setActiveTab(tabName);
   };
 
-  // 3. Fungsi berpusat untuk kembali ke Dashboard / halaman sebelumnya
+  // 3. Fungsi berpusat untuk butang Back manual
   const handleBackNavigation = () => {
-    if (window.location.hash && window.location.hash !== '#/home') {
-      window.history.back();
+    if (activeTab === 'home') {
+      handleLogout();
     } else {
       navigateTo('home');
     }
@@ -66,9 +64,8 @@ export default function App() {
       setSession(session);
       if (session) {
         fetchProfile(session.user.id);
-        if (!window.location.hash) {
-          window.location.hash = '#/home';
-        }
+        window.location.hash = '#/home';
+        setActiveTab('home');
       }
     });
 
@@ -78,11 +75,11 @@ export default function App() {
       if (session) {
         fetchProfile(session.user.id);
         setShowAuthModal(false);
-        if (!window.location.hash) {
-          window.location.hash = '#/home';
-        }
+        window.location.hash = '#/home';
+        setActiveTab('home');
       } else {
         setUserProfile(null);
+        window.location.hash = '';
       }
     });
 
@@ -154,13 +151,7 @@ export default function App() {
     <div className="dashboard-container">
       {/* Top Navigation */}
       <div className="top-nav">
-        <button 
-          className="exit-btn" 
-          onClick={() => {
-            const confirmExit = window.confirm('Adakah anda pasti mahu log keluar / keluar?');
-            if (confirmExit) handleLogout();
-          }}
-        >
+        <button className="exit-btn" onClick={handleLogout}>
           <span style={{ fontSize: '20px' }}>🚪</span> Exit
         </button>
         {activeTab !== 'home' && (
@@ -193,7 +184,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* 4 Menu Cards Sejajar dalam dashboard-grid */}
+          {/* 4 Menu Cards */}
           <div className="menu-card card-list" onClick={() => navigateTo('list')}>
             <div className="card-overlay">
               <h3>List of Issues</h3>
