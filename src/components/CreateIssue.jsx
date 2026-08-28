@@ -198,7 +198,7 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
               color: classification ? '#000' : '#888'
             }}
           >
-            <option value="" disabled hidden>Choose Classification</option>
+            <option value="" disabled hidden>Choose Issue Classification</option>
             <option value="A" style={{ color: '#000' }}>Class A - Safety/Quality Issue</option>
             <option value="B" style={{ color: '#000' }}>Class B - Cause to Breakdown/Downtime Production</option>
             <option value="C" style={{ color: '#000' }}>Class C - Opportunity for Improvement</option>
