@@ -13,22 +13,21 @@ export default function App() {
   const [userProfile, setUserProfile] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  // Helper untuk membaca tab semasa daripada URL Hash
-  const getTabFromHash = () => {
-    const hash = window.location.hash.replace('#/', '');
-    const validTabs = ['home', 'create', 'list', 'analytics', 'tagmap'];
-    return validTabs.includes(hash) ? hash : (hash === '' ? 'landing' : 'home');
-  };
-
   const [activeTab, setActiveTab] = useState('home');
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.hash = '';
+    setActiveTab('home');
+    setShowAuthModal(false);
+  };
 
   // 1. Dengar perubahan Back / Forward daripada Browser & Gesture Telefon
   useEffect(() => {
     const handleHashChange = () => {
       const currentHash = window.location.hash.replace('#/', '');
       
-      // Jika tekan back semasa di Dashboard (home), bawa terus ke Homepage / Login (Logout)
+      // Jika tekan back semasa di Dashboard (home), bawa ke Homepage / Login
       if (!currentHash || currentHash === '') {
         handleLogout();
       } else {
@@ -43,7 +42,7 @@ export default function App() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [session]);
 
-  // 2. Fungsi berpusat untuk buka mana-mana tab
+  // 2. Fungsi berpusat untuk menukar tab
   const navigateTo = (tabName) => {
     window.location.hash = `#/${tabName}`;
     setActiveTab(tabName);
@@ -59,6 +58,16 @@ export default function App() {
   };
 
   useEffect(() => {
+    const fetchProfile = async (userId) => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      if (data) setUserProfile(data);
+    };
+
     // Semak sesi log masuk awal dari Supabase
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -85,23 +94,6 @@ export default function App() {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const fetchProfile = async (userId) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-      
-    if (data) setUserProfile(data);
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.hash = '';
-    setActiveTab('home');
-    setShowAuthModal(false);
-  };
 
   const handleIssueCreated = () => {
     setRefreshTrigger((prev) => prev + 1);
