@@ -137,13 +137,13 @@ export default function IssueList() {
   const getStatusDetails = (status) => {
     switch (status) {
       case 'In Progress (1/4)':
-        return { icon: '◔', text: 'In Progress 1/4', bg: '#fd7e14', color: '#fff' };
+        return { icon: '◔', text: 'In Progress (1/4)', bg: '#fd7e14', color: '#fff' };
       case 'In Progress (2/4)':
-        return { icon: '◑', text: 'In Progress 2/4', bg: '#f59e0b', color: '#000' };
+        return { icon: '◑', text: 'In Progress (2/4)', bg: '#f59e0b', color: '#000' };
       case 'In Progress (3/4)':
-        return { icon: '◕', text: 'In Progress 3/4', bg: '#0284c7', color: '#fff' };
+        return { icon: '◕', text: 'In Progress (3/4)', bg: '#0284c7', color: '#fff' };
       case 'In Progress':
-        return { icon: '◑', text: 'In Progress', bg: '#f59e0b', color: '#000' };
+        return { icon: '◑', text: 'In Progress (2/4)', bg: '#f59e0b', color: '#000' };
       case 'Closed':
       case 'Completed':
       case 'Complete':
@@ -459,7 +459,7 @@ export default function IssueList() {
                             setSelectedIssue(issue);
                             const currentVal = issue.status === 'Completed' || issue.status === 'Complete' 
                               ? 'Closed' 
-                              : (issue.status?.includes('In Progress') ? 'In Progress' : (issue.status || 'Open'));
+                              : (issue.status || 'Open');
                             setNewStatus(currentVal);
                             setProgressNote(issue.progress_note || '');
                           }}
@@ -498,16 +498,18 @@ export default function IssueList() {
             <form onSubmit={handleUpdateProgress}>
               <div style={{ marginBottom: '14px' }}>
                 <label style={{ display: 'block', fontWeight: 'bold', fontSize: '12px', marginBottom: '5px' }}>
-                  Closing Status:
+                  Closing Status (Harvey Ball):
                 </label>
                 <select
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
                   style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '13px', backgroundColor: '#fff' }}
                 >
-                  <option value="Open">⚪ Open</option>
-                  <option value="In Progress">◑ In Progress</option>
-                  <option value="Closed">⚫ Closed</option>
+                  <option value="Open">⚪ Open (0/4)</option>
+                  <option value="In Progress (1/4)">◔ In Progress (1/4)</option>
+                  <option value="In Progress (2/4)">◑ In Progress (2/4)</option>
+                  <option value="In Progress (3/4)">◕ In Progress (3/4)</option>
+                  <option value="Closed">⚫ Closed (4/4)</option>
                 </select>
               </div>
 
