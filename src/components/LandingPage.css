@@ -13,7 +13,7 @@
   justify-content: center;
   align-items: center;
   background-color: #113c70;
-  background-image: url('../Homepage.jpg');
+  background-image: url('Homepage.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -44,7 +44,7 @@
 /* --- Penyelarasan Khas Untuk Skrin Telefon Pintar (Mobile View) --- */
 @media (max-width: 768px) {
   .embed-landing-container {
-    background-image: url('../HomepageMobile.png');
+    background-image: url('HomepageMobile.png');
     background-size: cover;
     background-position: center;
   }
