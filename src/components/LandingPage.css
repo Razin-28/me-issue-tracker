@@ -20,7 +20,7 @@
   overflow: hidden;
 }
 
-/* Butang LOGIN Desktop */
+/* Butang LOGIN Desktop (1920x1080) */
 .animated-login-btn {
   position: absolute;
   top: 67.8%;                  
@@ -54,20 +54,20 @@
   transform: translateY(-1px) scale(0.99);
 }
 
-/* --- Penyelarasan Khas Skrin Telefon Pintar (Mobile View) --- */
+/* --- Penyelarasan Khas Skrin Telefon Pintar (Mobile 100% Tepat) --- */
 @media (max-width: 768px) {
   .embed-landing-container {
     background-size: 100% 100%;
     background-position: center center;
   }
 
-  /* Kedudukan tepat menutupi keseluruhan pil kuning */
+  /* Menutup 100% pil kuning asal tanpa sebarang bocoran warna */
   .animated-login-btn {
-    top: 55.2%;                         /* Diturunkan tepat menutup bahagian bawah */
-    left: 49.1%;                        /* Digeser ke kiri menutup sisi kiri */
-    transform: translate(-50%, -50%);   
-    width: 28.5%;                       /* Lebar lebih padat menutup sisi */
-    height: 5.6%;                       /* Ketinggian penuh menutup pil asal */
+    top: 54.35%;                        /* Titik tengah Y tepat */
+    left: 51.3%;                        /* Titik tengah X tepat mengikut butang asal */
+    transform: translate(-50%, -50%);   /* Mengunci kedudukan tepat pada pusat */
+    width: 24.8%;                       /* Padan tepat dengan lebar pil asal */
+    height: 4.8%;                       /* Padan tepat dengan ketinggian pil asal */
     padding: 0;
     margin: 0;
     background: linear-gradient(180deg, #ffa200 0%, #ff7b00 100%);
