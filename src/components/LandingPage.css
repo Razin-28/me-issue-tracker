@@ -20,44 +20,32 @@
   overflow: hidden;
 }
 
-/* Butang LOGIN Timbul (Desktop / Laptop) */
-.animated-login-btn {
+/* Butang Lutsinar Tepat Atas Butang & Arrow Poster */
+.invisible-login-btn {
   position: absolute;
-  top: 65.5%; 
-  left: 22.5%;             /* Tepat di atas butang kuning LOGIN */
-  width: 16.5%;            
-  height: 9.5%;            
-  background-color: #ffb703; /* Warna kuning emas sepadan dengan poster */
-  color: #ffffff;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 1.5vw;
-  font-weight: 900;
-  letter-spacing: 1px;
+  top: 65.2%; 
+  left: 15.6%;             /* Meliputi bulatan anak panah dan pil LOGIN */
+  width: 23.5%;            /* Saiz padan tepat keseluruhan kawasan butang */
+  height: 9.8%;            
+  background: transparent;
   border: none;
   border-radius: 50px;
   cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   outline: none;
   z-index: 99;
-  
-  /* Animasi Transisi Halus */
-  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Kesan Timbul Apabila Tetikus Lalu (Hover) */
-.animated-login-btn:hover {
-  transform: translateY(-4px) scale(1.04); /* Naik ke atas & membesar sedikit */
-  background-color: #ffc300;               /* Kuning lebih terang */
-  box-shadow: 0 10px 22px rgba(255, 183, 3, 0.45), 0 6px 12px rgba(0, 0, 0, 0.3); /* Kesan bayang timbul 3D */
+/* Kesan Butang Timbul Bila Tetikus Lalu (Hover) */
+.invisible-login-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(255, 183, 3, 0.45); /* Pantulan bayang kuning timbul */
+  background: rgba(255, 255, 255, 0.05);
 }
 
-/* Kesan Apabila Ditekan (Click/Active) */
-.animated-login-btn:active {
-  transform: translateY(-1px) scale(0.98);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+/* Kesan Bila Ditekan (Click) */
+.invisible-login-btn:active {
+  transform: translateY(0px) scale(0.98);
 }
 
 /* --- Penyelarasan Khas Skrin Telefon Pintar (Mobile View) --- */
@@ -67,23 +55,22 @@
     background-position: center center;
   }
 
-  /* Butang LOGIN Timbul di Skrin Telefon */
-  .animated-login-btn {
+  /* Kedudukan butang LOGIN di telefon */
+  .invisible-login-btn {
     top: 51.5%;
     left: 50%;
     transform: translateX(-50%);
     width: 38%;
     height: 5.5%;
-    font-size: 15px;
     border-radius: 30px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    z-index: 999;
   }
 
-  .animated-login-btn:hover {
-    transform: translateX(-50%) translateY(-3px) scale(1.03);
+  .invisible-login-btn:hover {
+    transform: translateX(-50%) translateY(-2px) scale(1.02);
   }
 
-  .animated-login-btn:active {
+  .invisible-login-btn:active {
     transform: translateX(-50%) scale(0.96);
   }
 }
