@@ -23,31 +23,31 @@
 /* Butang Tepat di Atas Pil LOGIN */
 .invisible-login-btn {
   position: absolute;
-  top: 65.5%; 
-  left: 22.4%;                 /* Bermula tepat pada pangkal pil kuning LOGIN */
-  width: 16.5%;                /* Lebar ngam-ngam mengikut pil kuning */
-  height: 9.2%;                /* Ketinggian mengikut pil kuning */
+  top: 67.8%;                  /* Kedudukan tepat mengikut piksel asal */
+  left: 19.0%;                 /* Mula tepat di garisan kiri pil kuning */
+  width: 16.8%;                /* Lebar tepat pil kuning */
+  height: 10.4%;               /* Ketinggian tepat pil kuning */
   background: transparent;
   border: 2px solid transparent;
-  border-radius: 999px;        /* Mengikut lengkung penuh pil kuning */
+  border-radius: 999px;
   cursor: pointer;
   outline: none;
   z-index: 99;
-  transition: all 0.25s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
-/* Kesan Kotak Kabur / Glow Halus Tepat di Atas Butang LOGIN */
+/* Kesan Kotak Kabur & Glow Tepat di Atas Pil LOGIN */
 .invisible-login-btn:hover {
-  background: rgba(255, 255, 255, 0.12);        /* Lapisan kabur putih nipis */
-  border-color: rgba(255, 255, 255, 0.4);       /* Garisan tepi kemas */
-  backdrop-filter: blur(4px);                  /* Efek kaca kabur (frosted glass) */
-  box-shadow: 0 0 15px rgba(255, 183, 3, 0.5); /* Cahaya glow kuning sekeliling pil */
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(2px);
+  box-shadow: 0 0 12px rgba(255, 183, 3, 0.6);
   transform: scale(1.02);
 }
 
 .invisible-login-btn:active {
   transform: scale(0.98);
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* --- Penyelarasan Khas Skrin Telefon Pintar (Mobile View) --- */
@@ -57,7 +57,6 @@
     background-position: center center;
   }
 
-  /* Kedudukan tepat pil LOGIN di telefon */
   .invisible-login-btn {
     top: 51.3%;
     left: 50%;
