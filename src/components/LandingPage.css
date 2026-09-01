@@ -61,34 +61,31 @@
     background-position: center center;
   }
 
-  /* Saiz dan kedudukan tepat menutup 100% pil kuning belakang */
+  /* Kedudukan tepat menutupi 100% pil kuning mobile */
   .animated-login-btn {
-    top: 53.3%;                    /* Diturunkan supaya ngam-ngam atas pil kuning */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 27.2%;                  /* Lebar dilebarkan sedikit untuk tutup tepi */
-    height: 5.2%;                  /* Tinggi dilaraskan tepat */
+    top: 54.5%;                         /* Titik tengah menegak pil kuning */
+    left: 50%;                          /* Titik tengah mendatar */
+    transform: translate(-50%, -50%);   /* Kunci penjajaran tepat di tengah */
+    width: 25.5%;                       /* Padan tepat dengan lebar pil */
+    height: 5.1%;                       /* Padan tepat dengan tinggi pil */
+    padding: 0;
+    margin: 0;
     background: linear-gradient(180deg, #ffa200 0%, #ff7b00 100%);
     color: #ffffff;
     font-size: 11.5px;
     font-weight: 900;
     letter-spacing: 0.8px;
-    border: none;
+    border: 1.5px solid rgba(255, 255, 255, 0.65); /* Garisan cincin kemas */
     border-radius: 999px;
-    
-    /* Cincin garisan luar putih nipis */
-    outline: 1.5px solid rgba(255, 255, 255, 0.55);
-    outline-offset: 3px;
-    
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-    transition: all 0.2s ease-in-out;
+    outline: none;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
 
-  .animated-login-btn:hover, 
+  .animated-login-btn:hover,
   .animated-login-btn:active {
-    transform: translateX(-50%) scale(1.03);
-    outline-color: rgba(255, 255, 255, 0.9);
-    outline-offset: 4px;
-    box-shadow: 0 6px 16px rgba(255, 138, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.4);
+    transform: translate(-50%, -50%) scale(1.03);
+    border-color: #ffffff;
+    box-shadow: 0 5px 14px rgba(255, 140, 0, 0.5), 0 3px 8px rgba(0, 0, 0, 0.35);
   }
 }
