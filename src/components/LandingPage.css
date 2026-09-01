@@ -4,18 +4,18 @@
   box-sizing: border-box;
 }
 
-/* Container Utama Latar Belakang (Desktop / Laptop) */
+/* Container Utama (Desktop / Laptop) */
 .embed-landing-container {
   position: relative;
   width: 100vw;
   height: 100vh;
-  height: 100dvh; /* dynamic viewport height untuk telefon */
+  height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #113c70;
-  background-size: 100% 100%;
-  background-position: center top;
+  background-size: 100% 100%; /* Menjamin keseluruhan poster 16:9 muat dalam skrin tanpa terpotong bawah */
+  background-position: center center;
   background-repeat: no-repeat;
   overflow: hidden;
 }
@@ -23,10 +23,10 @@
 /* Butang Lutsinar Untuk PC / Laptop */
 .invisible-login-btn {
   position: absolute;
-  top: 66%; 
-  left: 18%; 
-  width: 18%;
-  height: 10%;
+  top: 67%; 
+  left: 15.5%; 
+  width: 17%;
+  height: 11%;
   background: rgba(255, 255, 255, 0);
   border: none;
   border-radius: 50px;
@@ -41,25 +41,29 @@
   transform: scale(1.02);
 }
 
-/* --- Penyelarasan Khas Skrin Telefon Pintar --- */
+/* --- Penyelarasan Khas Skrin Telefon Pintar (Mobile View) --- */
 @media (max-width: 768px) {
   .embed-landing-container {
-    background-size: 100% 100%; /* Memastikan gambar muat tepat tanpa terpotong */
+    background-size: 100% 100%;
     background-position: center center;
   }
 
-  /* Kedudukan tepat butang LOGIN berdasarkan gambar telefon */
+  /* Kedudukan butang LOGIN di telefon */
   .invisible-login-btn {
-    top: 51.5%;                   /* Tepat di atas butang kuning LOGIN */
+    top: 51.5%;
     left: 50%;
-    transform: translateX(-50%);  /* Tengah paksi mendatar */
-    width: 38%;                   /* Lebar butang kuning */
-    height: 5.5%;                 /* Tinggi butang kuning */
+    transform: translateX(-50%);
+    width: 38%;
+    height: 5.5%;
     border-radius: 30px;
     z-index: 999;
   }
 
+  .invisible-login-btn:hover {
+    transform: translateX(-50%) scale(1.02);
+  }
+
   .invisible-login-btn:active {
-    background: rgba(0, 0, 0, 0.15); /* Feedback visual bila ditekan di telefon */
+    background: rgba(0, 0, 0, 0.15);
   }
 }
