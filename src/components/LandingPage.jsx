@@ -1,9 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './LandingPage.css';
 
 export default function LandingPage({ onGoToLogin }) {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Membaca fail terus dari folder public
+  const bgImage = isMobile
+    ? `${process.env.PUBLIC_URL}/HomepageMobile.png`
+    : `${process.env.PUBLIC_URL}/Homepage.png`;
+
   return (
-    <div className="embed-landing-container">
+    <div 
+      className="embed-landing-container"
+      style={{
+        backgroundImage: `url(${bgImage})`
+      }}
+    >
       {/* Butang Lutsinar bertindih di atas butang LOGIN poster */}
       <button 
         className="invisible-login-btn" 

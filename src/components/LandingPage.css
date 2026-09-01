@@ -4,7 +4,7 @@
   box-sizing: border-box;
 }
 
-/* Container Utama Latar Belakang (Laptop / Desktop) */
+/* Container Utama Latar Belakang (Desktop / Laptop) */
 .embed-landing-container {
   position: relative;
   width: 100vw;
@@ -13,7 +13,6 @@
   justify-content: center;
   align-items: center;
   background-color: #113c70;
-  background-image: url('Homepage.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -43,19 +42,12 @@
 
 /* --- Penyelarasan Khas Untuk Skrin Telefon Pintar (Mobile View) --- */
 @media (max-width: 768px) {
-  .embed-landing-container {
-    background-image: url('HomepageMobile.png');
-    background-size: cover;
-    background-position: center;
-  }
-
-  /* Selaraskan kedudukan butang LOGIN di skrin telefon */
   .invisible-login-btn {
     top: 60%;                     /* Laraskan % ketinggian mengikut rekaan mobile anda */
     left: 50%;
-    transform: translateX(-50%);  /* Letak tepat di tengah skrin */
-    width: 55%;                   /* Lebar butang login di mobile */
-    height: 7%;                   /* Ketinggian butang login di mobile */
+    transform: translateX(-50%);  /* Letak tepat di tengah skrin telefon */
+    width: 55%;
+    height: 7%;
     border-radius: 40px;
   }
 
