@@ -14,22 +14,22 @@
   justify-content: center;
   align-items: center;
   background-color: #113c70;
-  background-size: 100% 100%; /* Menjamin keseluruhan poster 16:9 muat dalam skrin tanpa terpotong bawah */
+  background-size: 100% 100%;
   background-position: center center;
   background-repeat: no-repeat;
   overflow: hidden;
 }
 
-/* Butang Lutsinar Untuk PC / Laptop */
+/* Butang Lutsinar Untuk PC / Laptop - Tepat pada butang LOGIN */
 .invisible-login-btn {
   position: absolute;
-  top: 67%; 
-  left: 15.5%; 
-  width: 17%;
-  height: 11%;
+  top: 65.5%; 
+  left: 22.3%;             /* Dilaraskan ke kanan supaya ngam-ngam atas butang kuning */
+  width: 16.5%;            /* Lebar diselaraskan mengikut saiz butang kuning */
+  height: 9.5%;            /* Ketinggian butang diselaraskan */
   background: rgba(255, 255, 255, 0);
   border: none;
-  border-radius: 50px;
+  border-radius: 40px;     /* Bentuk bulat pil yang kemas */
   cursor: pointer;
   color: transparent;
   transition: background 0.2s, transform 0.1s;
@@ -37,7 +37,7 @@
 }
 
 .invisible-login-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.15); /* Kilauan putih cair kini hanya berada di dalam butang */
   transform: scale(1.02);
 }
 
