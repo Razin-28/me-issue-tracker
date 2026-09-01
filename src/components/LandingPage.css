@@ -20,7 +20,7 @@
   overflow: hidden;
 }
 
-/* Butang LOGIN Timbul Desktop (1920x1080) */
+/* Butang LOGIN Desktop */
 .animated-login-btn {
   position: absolute;
   top: 67.8%;                  
@@ -46,42 +46,50 @@
 }
 
 .animated-login-btn:hover {
-  transform: translateY(-8px) scale(1.03);
+  transform: translateY(-6px) scale(1.03);
   box-shadow: 0 16px 28px rgba(0, 0, 0, 0.4), 0 0 18px rgba(255, 183, 3, 0.6);
 }
 
 .animated-login-btn:active {
-  transform: translateY(-2px) scale(0.99);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px) scale(0.99);
 }
 
-/* --- Penyelarasan Khas Skrin Telefon Pintar (Mobile: 1080x1920) --- */
+/* --- Penyelarasan Khas Skrin Telefon Pintar (Mobile View Seperti Gambar 2) --- */
 @media (max-width: 768px) {
   .embed-landing-container {
     background-size: 100% 100%;
     background-position: center center;
   }
 
-  /* Saiz dan koordinat tepat di atas pil kuning rekaan mobile */
+  /* Butang LOGIN Gaya Cincin Garisan Luar & Gradien Padu */
   .animated-login-btn {
-    top: 52.0%;
+    top: 52.8%;
     left: 50%;
     transform: translateX(-50%);
-    width: 24.5%;                  /* Mengikut nisbah lebar sebenar grafik */
-    height: 4.95%;                 /* Mengikut ketinggian tepat grafik */
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
+    width: 25.5%;                  /* Saiz lebar ngam-ngam grafik */
+    height: 4.8%;                  /* Saiz tinggi ngam-ngam grafik */
+    background: linear-gradient(180deg, #ffa200 0%, #ff7b00 100%);
+    color: #ffffff;
+    font-size: 11.5px;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+    border: none;
     border-radius: 999px;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    
+    /* Cincin garisan luar putih nipis (seperti gambar 2) */
+    outline: 1.5px solid rgba(255, 255, 255, 0.55);
+    outline-offset: 3px;
+    
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    transition: all 0.2s ease-in-out;
   }
 
-  .animated-login-btn:hover {
-    transform: translateX(-50%) translateY(-3px) scale(1.02);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
-  }
-
+  /* Efek bila ditekan / disentuh di telefon */
+  .animated-login-btn:hover, 
   .animated-login-btn:active {
-    transform: translateX(-50%) scale(0.96);
+    transform: translateX(-50%) scale(1.04);
+    outline-color: rgba(255, 255, 255, 0.9);
+    outline-offset: 4px;
+    box-shadow: 0 6px 16px rgba(255, 138, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.4);
   }
 }
