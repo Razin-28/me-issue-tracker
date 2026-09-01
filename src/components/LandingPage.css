@@ -20,7 +20,7 @@
   overflow: hidden;
 }
 
-/* Butang LOGIN Timbul Desktop */
+/* Butang LOGIN Timbul Desktop (1920x1080) */
 .animated-login-btn {
   position: absolute;
   top: 67.8%;                  
@@ -55,30 +55,30 @@
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* --- Penyelarasan Khas Skrin Telefon Pintar (Mobile View) --- */
+/* --- Penyelarasan Khas Skrin Telefon Pintar (Mobile: 1080x1920) --- */
 @media (max-width: 768px) {
   .embed-landing-container {
     background-size: 100% 100%;
     background-position: center center;
   }
 
-  /* Saiz dan kedudukan tepat mengikut grafik mobile asal */
+  /* Saiz dan koordinat tepat di atas pil kuning rekaan mobile */
   .animated-login-btn {
-    top: 52.6%;                   /* Tepat di atas pil kuning asal */
+    top: 52.0%;
     left: 50%;
     transform: translateX(-50%);
-    width: 36%;                   /* Lebar dipadankan dengan saiz grafik kedua */
-    height: 5.2%;                 /* Ketinggian dipadankan dengan tepat */
-    font-size: 13.5px;
+    width: 24.5%;                  /* Mengikut nisbah lebar sebenar grafik */
+    height: 4.95%;                 /* Mengikut ketinggian tepat grafik */
+    font-size: 12px;
     font-weight: 800;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.5px;
     border-radius: 999px;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
   }
 
   .animated-login-btn:hover {
     transform: translateX(-50%) translateY(-3px) scale(1.02);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35), 0 0 10px rgba(255, 183, 3, 0.5);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
   }
 
   .animated-login-btn:active {
