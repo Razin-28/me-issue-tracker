@@ -13,7 +13,6 @@ export default function LandingPage({ onGoToLogin }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Membaca fail terus dari folder public
   const bgImage = isMobile
     ? `${process.env.PUBLIC_URL}/HomepageMobile.png`
     : `${process.env.PUBLIC_URL}/Homepage.png`;
@@ -25,9 +24,9 @@ export default function LandingPage({ onGoToLogin }) {
         backgroundImage: `url(${bgImage})`
       }}
     >
-      {/* Butang Lutsinar bertindih di atas butang LOGIN poster */}
+      {/* Butang Interaktif Beranimasi Timbul */}
       <button 
-        className="invisible-login-btn" 
+        className="animated-login-btn" 
         onClick={onGoToLogin}
         title="Click to Log In"
         aria-label="Log In"
