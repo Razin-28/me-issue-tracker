@@ -20,31 +20,34 @@
   overflow: hidden;
 }
 
-/* Butang Lutsinar Bersih (Tiada Bayang / Tiada Warna Kelabu) */
+/* Butang Tepat di Atas Pil LOGIN */
 .invisible-login-btn {
   position: absolute;
-  top: 65%; 
-  left: 15.5%;             
-  width: 24%;            
-  height: 10.5%;            
-  background: transparent !important;
-  border: none !important;
-  border-radius: 50px;
+  top: 65.5%; 
+  left: 22.4%;                 /* Bermula tepat pada pangkal pil kuning LOGIN */
+  width: 16.5%;                /* Lebar ngam-ngam mengikut pil kuning */
+  height: 9.2%;                /* Ketinggian mengikut pil kuning */
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 999px;        /* Mengikut lengkung penuh pil kuning */
   cursor: pointer;
   outline: none;
-  box-shadow: none !important;
   z-index: 99;
+  transition: all 0.25s ease-in-out;
 }
 
-/* Tetap bersih bila tetikus lalu */
+/* Kesan Kotak Kabur / Glow Halus Tepat di Atas Butang LOGIN */
 .invisible-login-btn:hover {
-  background: transparent !important;
-  box-shadow: none !important;
+  background: rgba(255, 255, 255, 0.12);        /* Lapisan kabur putih nipis */
+  border-color: rgba(255, 255, 255, 0.4);       /* Garisan tepi kemas */
+  backdrop-filter: blur(4px);                  /* Efek kaca kabur (frosted glass) */
+  box-shadow: 0 0 15px rgba(255, 183, 3, 0.5); /* Cahaya glow kuning sekeliling pil */
+  transform: scale(1.02);
 }
 
-/* Sedikit feedback klik sahaja */
 .invisible-login-btn:active {
-  opacity: 0.8;
+  transform: scale(0.98);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* --- Penyelarasan Khas Skrin Telefon Pintar (Mobile View) --- */
@@ -54,14 +57,22 @@
     background-position: center center;
   }
 
-  /* Kedudukan butang LOGIN di telefon */
+  /* Kedudukan tepat pil LOGIN di telefon */
   .invisible-login-btn {
-    top: 51%;
+    top: 51.3%;
     left: 50%;
     transform: translateX(-50%);
-    width: 40%;
-    height: 6%;
-    border-radius: 30px;
+    width: 37.5%;
+    height: 5.6%;
+    border-radius: 999px;
     z-index: 999;
+  }
+
+  .invisible-login-btn:hover {
+    transform: translateX(-50%) scale(1.02);
+  }
+
+  .invisible-login-btn:active {
+    transform: translateX(-50%) scale(0.97);
   }
 }
