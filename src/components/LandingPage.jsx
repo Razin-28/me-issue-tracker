@@ -24,13 +24,15 @@ export default function LandingPage({ onGoToLogin }) {
         backgroundImage: `url(${bgImage})`
       }}
     >
-      {/* Butang Lutsinar Mengikut Saiz Poster */}
+      {/* Butang Kuning Timbul Tepat */}
       <button 
-        className="invisible-login-btn" 
+        className="animated-login-btn" 
         onClick={onGoToLogin}
         title="Click to Log In"
         aria-label="Log In"
-      />
+      >
+        LOGIN
+      </button>
     </div>
   );
 }

@@ -20,41 +20,43 @@
   overflow: hidden;
 }
 
-/* Butang Tepat di Atas Pil LOGIN */
-.invisible-login-btn {
+/* Butang LOGIN Timbul Sebenar (Tepat di Atas Pil Poster) */
+.animated-login-btn {
   position: absolute;
-  top: 67.8%;                  
-  left: 19.0%;                 
-  width: 16.8%;                
-  height: 10.4%;               
-  background: transparent;
-  border: 2px solid transparent;
+  top: 67.8%;                  /* Nilai piksel tepat */
+  left: 19.0%;                 /* Nilai piksel tepat */
+  width: 16.8%;                /* Nilai piksel tepat */
+  height: 10.4%;               /* Nilai piksel tepat */
+  background: linear-gradient(180deg, #ffb703 0%, #fb8500 100%); /* Gradien kuning-emas pekat */
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 1.5vw;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  border: none;
   border-radius: 999px;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   outline: none;
   z-index: 99;
   
-  /* Transisi melantun halus untuk ilusi 3D */
-  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease, background 0.2s ease;
+  /* Keadaan Asal: Selari dengan poster */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
 }
 
-/* Kesan Butang Timbul (3D Lift & Shadow) */
-.invisible-login-btn:hover {
-  transform: translateY(-4px) scale(1.02); /* Naik sedikit ke atas secara 3D */
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.35);
-  backdrop-filter: blur(1.5px);
-  /* Bayangan berlapis untuk kedalaman 3D yang realistik */
-  box-shadow: 
-    0 10px 20px rgba(0, 0, 0, 0.35),
-    0 4px 10px rgba(255, 183, 3, 0.5);
+/* Kesan Timbul 3D Padu Bila Tetikus Lalu (Hover) */
+.animated-login-btn:hover {
+  transform: translateY(-8px) scale(1.03); /* Timbul naik ke atas */
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.4), 0 0 18px rgba(255, 183, 3, 0.6); /* Bayang tebal 3D */
 }
 
-/* Kesan Bila Butang Ditekan (Tolak ke dalam) */
-.invisible-login-btn:active {
-  transform: translateY(1px) scale(0.98);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-  background: rgba(255, 255, 255, 0.2);
+/* Kesan Apabila Ditekan (Click) */
+.animated-login-btn:active {
+  transform: translateY(-2px) scale(0.99);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* --- Penyelarasan Khas Skrin Telefon Pintar (Mobile View) --- */
@@ -64,22 +66,23 @@
     background-position: center center;
   }
 
-  .invisible-login-btn {
+  /* Butang di skrin telefon */
+  .animated-login-btn {
     top: 51.3%;
     left: 50%;
     transform: translateX(-50%);
     width: 37.5%;
     height: 5.6%;
-    border-radius: 999px;
-    z-index: 999;
+    font-size: 14px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
   }
 
-  .invisible-login-btn:hover {
-    transform: translateX(-50%) translateY(-3px) scale(1.02);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3), 0 3px 8px rgba(255, 183, 3, 0.4);
+  .animated-login-btn:hover {
+    transform: translateX(-50%) translateY(-4px) scale(1.03);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
   }
 
-  .invisible-login-btn:active {
+  .animated-login-btn:active {
     transform: translateX(-50%) scale(0.97);
   }
 }
