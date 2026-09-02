@@ -168,7 +168,7 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
               cursor: 'pointer',
               textDecoration: 'underline'
             }}>
-              Choose Passport Photo (Max 2 MB)
+              Choose Photo
               <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
             </label>
           </div>
