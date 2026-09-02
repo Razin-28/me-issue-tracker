@@ -27,7 +27,7 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
     if (initialName) setFullName(initialName);
     if (initialStaffId) setStaffId(initialStaffId);
     if (profile?.avatar_url) setPreviewUrl(profile.avatar_url);
-  }, [profile, user]);
+  }, [initialName, initialStaffId, profile?.avatar_url]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -161,7 +161,6 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
         )}
 
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          
           {/* Avatar Preview & Upload */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
             <div style={{
