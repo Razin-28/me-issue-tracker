@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-export default function Auth({ onLoginSuccess }) {
-  const [authMode, setAuthMode] = useState('login'); // 'login', 'signup', 'forgot'
+export default function Auth({ onLoginSuccess, forceRecoveryMode = false, onPasswordResetComplete }) {
+  const [authMode, setAuthMode] = useState(forceRecoveryMode ? 'update_password' : 'login');
   const [loading, setLoading] = useState(false);
 
   // States
@@ -10,11 +10,19 @@ export default function Auth({ onLoginSuccess }) {
   const [name, setName] = useState('');
   const [staffId, setStaffId] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [departmentCode, setDepartmentCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    if (forceRecoveryMode) {
+      setAuthMode('update_password');
+      setSuccessMessage('Please set your new password below.');
+    }
+  }, [forceRecoveryMode]);
 
   const resetNotices = () => {
     setErrorMessage('');
@@ -27,24 +35,51 @@ export default function Auth({ onLoginSuccess }) {
     resetNotices();
 
     try {
-      // 1. Mod Forgot Password
-      if (authMode === 'forgot') {
-        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: window.location.origin,
+      // 1. Mod Set New Password (Selepas klik link emel)
+      if (authMode === 'update_password') {
+        if (password.length < 6) {
+          throw new Error('Password must be at least 6 characters long.');
+        }
+        if (password !== confirmNewPassword) {
+          throw new Error('Passwords do not match!');
+        }
+
+        const { error } = await supabase.auth.updateUser({
+          password: password,
         });
 
         if (error) throw error;
 
-        setSuccessMessage('Password reset link has been sent to your email. Please check your inbox!');
-        setLoading(false);
+        setSuccessMessage('Password successfully changed! Please log in with your new password.');
+        
+        setTimeout(() => {
+          if (onPasswordResetComplete) {
+            onPasswordResetComplete();
+          } else {
+            setAuthMode('login');
+            setPassword('');
+            setConfirmNewPassword('');
+          }
+        }, 2000);
         return;
       }
 
-      // 2. Mod Sign Up
+      // 2. Mod Forgot Password (Hantar pautan emel)
+      if (authMode === 'forgot') {
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: `${window.location.origin}/`,
+        });
+
+        if (error) throw error;
+
+        setSuccessMessage('Password reset link sent! Check your inbox.');
+        return;
+      }
+
+      // 3. Mod Sign Up
       if (authMode === 'signup') {
         if (departmentCode.trim().toUpperCase() !== 'ME') {
           setErrorMessage('Invalid Department Code!');
-          setLoading(false);
           return;
         }
 
@@ -72,7 +107,7 @@ export default function Auth({ onLoginSuccess }) {
           setDepartmentCode('');
         }
       } else {
-        // 3. Mod Login
+        // 4. Mod Login
         const { data, error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password: password,
@@ -107,6 +142,7 @@ export default function Auth({ onLoginSuccess }) {
         {authMode === 'signup' && 'Staff Registration'}
         {authMode === 'login' && 'Staff Login'}
         {authMode === 'forgot' && 'Reset Password'}
+        {authMode === 'update_password' && 'Set New Password'}
       </h2>
 
       {errorMessage && (
@@ -122,61 +158,62 @@ export default function Auth({ onLoginSuccess }) {
       )}
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {/* Email */}
-        <div>
-          <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
-            Email:
-          </label>
-          <input
-            type="email"
-            required
-            placeholder="Enter your Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
-          />
-        </div>
-
-        {/* Full Name (Sign Up Sahaja) */}
-        {authMode === 'signup' && (
+        {/* Email input hanya jika bukan mod update_password */}
+        {authMode !== 'update_password' && (
           <div>
             <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
-              Name:
+              Email:
             </label>
             <input
-              type="text"
+              type="email"
               required
-              placeholder="Enter your Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
             />
           </div>
         )}
 
-        {/* Staff ID (Sign Up Sahaja) */}
+        {/* Full Name & Staff ID (Sign Up Sahaja) */}
         {authMode === 'signup' && (
-          <div>
-            <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
-              Staff ID:
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="Enter your Staff ID"
-              value={staffId}
-              onChange={(e) => setStaffId(e.target.value)}
-              style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
-            />
-          </div>
+          <>
+            <div>
+              <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
+                Name:
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="Enter your Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
+                Staff ID:
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="Enter your Staff ID"
+                value={staffId}
+                onChange={(e) => setStaffId(e.target.value)}
+                style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
+              />
+            </div>
+          </>
         )}
 
-        {/* Password (Login & Sign Up Sahaja) */}
+        {/* Password input */}
         {authMode !== 'forgot' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
               <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333' }}>
-                Password:
+                {authMode === 'update_password' ? 'New Password:' : 'Password:'}
               </label>
               {authMode === 'login' && (
                 <button
@@ -192,7 +229,7 @@ export default function Auth({ onLoginSuccess }) {
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
-                placeholder="Enter your Password"
+                placeholder={authMode === 'update_password' ? 'Enter new password (min 6 characters)' : 'Enter your Password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 style={{
@@ -238,6 +275,23 @@ export default function Auth({ onLoginSuccess }) {
           </div>
         )}
 
+        {/* Confirm New Password (Mod update_password sahaja) */}
+        {authMode === 'update_password' && (
+          <div>
+            <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
+              Confirm New Password:
+            </label>
+            <input
+              type="password"
+              required
+              placeholder="Confirm new password"
+              value={confirmNewPassword}
+              onChange={(e) => setConfirmNewPassword(e.target.value)}
+              style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box', fontSize: '13px' }}
+            />
+          </div>
+        )}
+
         {/* Department Code (Sign Up Sahaja) */}
         {authMode === 'signup' && (
           <div>
@@ -275,14 +329,15 @@ export default function Auth({ onLoginSuccess }) {
         >
           {loading ? 'Processing...' : (
             authMode === 'signup' ? 'Register' :
-            authMode === 'forgot' ? 'Send Reset Link' : 'Log In'
+            authMode === 'forgot' ? 'Send Reset Link' : 
+            authMode === 'update_password' ? 'Save New Password' : 'Log In'
           )}
         </button>
       </form>
 
-      {/* Navigasi Mod */}
+      {/* Navigasi Pilihan Mod */}
       <div style={{ textAlign: 'center', marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {authMode === 'forgot' ? (
+        {authMode === 'update_password' ? null : authMode === 'forgot' ? (
           <button
             type="button"
             onClick={() => { setAuthMode('login'); resetNotices(); }}

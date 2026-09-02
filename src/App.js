@@ -17,15 +17,24 @@ export default function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [activeTab, setActiveTab] = useState('home');
 
+  // Kesan jika pengguna datang dari pautan 'Reset Password' di emel
+  const [isRecoveryMode, setIsRecoveryMode] = useState(
+    window.location.hash.includes('type=recovery') || window.location.href.includes('type=recovery')
+  );
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     window.location.hash = '';
     setActiveTab('home');
     setShowAuthModal(false);
+    setIsRecoveryMode(false);
   };
 
   useEffect(() => {
     const handleHashChange = () => {
+      // Jika dalam mod reset password, jangan benarkan tukar skrin lain
+      if (isRecoveryMode) return;
+
       const currentHash = window.location.hash.replace('#/', '').replace('#', '');
       
       if (!session) {
@@ -50,7 +59,7 @@ export default function App() {
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [session]);
+  }, [session, isRecoveryMode]);
 
   const navigateTo = (tabName) => {
     window.location.hash = `#/${tabName}`;
@@ -87,6 +96,10 @@ export default function App() {
     };
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (window.location.hash.includes('type=recovery')) {
+        setIsRecoveryMode(true);
+        return;
+      }
       setSession(session);
       if (session) {
         fetchProfile(session.user.id);
@@ -95,28 +108,49 @@ export default function App() {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecoveryMode(true);
+        return;
+      }
+
       setSession(session);
-      if (session) {
+      if (session && !isRecoveryMode) {
         fetchProfile(session.user.id);
         setShowAuthModal(false);
         window.location.hash = '#/home';
         setActiveTab('home');
-      } else {
+      } else if (!session) {
         setUserProfile(null);
         window.location.hash = '';
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [isRecoveryMode]);
 
   const handleIssueCreated = () => {
     setRefreshTrigger((prev) => prev + 1);
     navigateTo('list');
   };
 
-  // 1. JIKA BELUM LOGIN
+  // 1. JIKA DALAM MOD RECOVERY (LEPAS KLIK LINK RESET PASSWORD DI EMEL)
+  // Menghalang pengguna terus masuk dashboard sehingga password baru disimpan
+  if (isRecoveryMode) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f9', padding: '40px 20px' }}>
+        <Auth 
+          forceRecoveryMode={true} 
+          onPasswordResetComplete={() => {
+            setIsRecoveryMode(false);
+            handleLogout();
+          }} 
+        />
+      </div>
+    );
+  }
+
+  // 2. BELUM LOGIN
   if (!session) {
     if (showAuthModal) {
       return (
@@ -143,7 +177,7 @@ export default function App() {
     return <LandingPage onGoToLogin={openLogin} />;
   }
 
-  // 2. JIKA SUDAH LOGIN
+  // 3. SUDAH LOGIN
   const displayName = 
     userProfile?.full_name || 
     session.user?.user_metadata?.full_name || 
@@ -159,14 +193,12 @@ export default function App() {
     <div className="dashboard-container">
       {/* Top Navigation Bar */}
       <div className="top-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        {/* Kiri: Exit Button */}
         <div>
           <button className="exit-btn" onClick={handleLogout}>
             <span style={{ fontSize: '18px' }}>🚪</span> Exit
           </button>
         </div>
 
-        {/* Kanan: Edit Profile (Bila di Home) ATAU Back to Dashboard (Bila di sub-page lain) */}
         <div>
           {activeTab === 'home' ? (
             <button
@@ -210,7 +242,6 @@ export default function App() {
             </div>
 
             <div className="user-profile" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              {/* Gambar Passport Profil */}
               <div 
                 className="avatar" 
                 style={{ 
