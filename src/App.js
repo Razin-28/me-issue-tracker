@@ -159,11 +159,36 @@ export default function App() {
     <div className="dashboard-container">
       {/* Top Navigation Bar */}
       <div className="top-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Kiri: Exit Button */}
+        <div>
           <button className="exit-btn" onClick={handleLogout}>
             <span style={{ fontSize: '18px' }}>🚪</span> Exit
           </button>
-          {activeTab !== 'home' && (
+        </div>
+
+        {/* Kanan: Edit Profile (Bila di Home) ATAU Back to Dashboard (Bila di sub-page lain) */}
+        <div>
+          {activeTab === 'home' ? (
+            <button
+              onClick={() => setShowProfileModal(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                backgroundColor: '#0d3b66',
+                color: '#fff',
+                border: 'none',
+                padding: '8px 14px',
+                borderRadius: '6px',
+                fontWeight: 'bold',
+                fontSize: '13px',
+                cursor: 'pointer',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+              }}
+            >
+              <span>✏️</span> Edit Profile
+            </button>
+          ) : (
             <button 
               className="back-btn" 
               onClick={handleBackNavigation}
@@ -172,29 +197,6 @@ export default function App() {
             </button>
           )}
         </div>
-
-        {/* Butang Edit Profile HANYA dipaparkan semasa di tab home */}
-        {activeTab === 'home' && (
-          <button
-            onClick={() => setShowProfileModal(true)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              backgroundColor: '#0d3b66',
-              color: '#fff',
-              border: 'none',
-              padding: '8px 14px',
-              borderRadius: '6px',
-              fontWeight: 'bold',
-              fontSize: '13px',
-              cursor: 'pointer',
-              boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
-            }}
-          >
-            <span>✏️</span> Edit Profile
-          </button>
-        )}
       </div>
 
       {/* Main Content View */}
