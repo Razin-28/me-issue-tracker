@@ -1,9 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
 export default function EditProfileModal({ user, profile, onClose, onProfileUpdated }) {
-  const [fullName, setFullName] = useState(profile?.full_name || '');
-  const [staffId, setStaffId] = useState(profile?.staff_id || '');
+  const initialName = 
+    profile?.full_name || 
+    user?.user_metadata?.full_name || 
+    user?.user_metadata?.name || 
+    '';
+
+  const initialStaffId = 
+    profile?.staff_id || 
+    user?.user_metadata?.staff_id || 
+    '';
+
+  const [fullName, setFullName] = useState(initialName);
+  const [staffId, setStaffId] = useState(initialStaffId);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [avatarFile, setAvatarFile] = useState(null);
@@ -11,6 +22,12 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
   const [uploading, setUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    if (initialName) setFullName(initialName);
+    if (initialStaffId) setStaffId(initialStaffId);
+    if (profile?.avatar_url) setPreviewUrl(profile.avatar_url);
+  }, [profile, user]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -33,7 +50,7 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
     setSuccessMessage('');
 
     try {
-      // 1. Validasi Tukar Kata Laluan (jika diisi)
+      // 1. Tukar Kata Laluan (Hanya jika diisi)
       if (newPassword) {
         if (newPassword.length < 6) {
           throw new Error('Password must be at least 6 characters long.');
@@ -48,7 +65,7 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
         if (pwdError) throw pwdError;
       }
 
-      // 2. Muat naik gambar ke bucket 'avatars' jika ada fail baharu
+      // 2. Muat naik gambar ke bucket 'avatars' (Hanya jika ada fail baharu)
       let finalAvatarUrl = profile?.avatar_url || null;
       if (avatarFile) {
         const fileExt = avatarFile.name.split('.').pop();
@@ -68,13 +85,17 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
         finalAvatarUrl = publicUrlData.publicUrl;
       }
 
-      // 3. Simpan ke jadual profiles
+      // 3. Kekalkan data sedia ada jika input dibiarkan kosong
+      const updatedFullName = fullName.trim() !== '' ? fullName.trim() : initialName;
+      const updatedStaffId = staffId.trim() !== '' ? staffId.trim().toUpperCase() : initialStaffId;
+
+      // 4. Simpan perubahan ke jadual profiles
       const { error: updateError } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
-          full_name: fullName.trim(),
-          staff_id: staffId.trim().toUpperCase(),
+          full_name: updatedFullName,
+          staff_id: updatedStaffId,
           avatar_url: finalAvatarUrl,
           updated_at: new Date().toISOString(),
         });
@@ -83,15 +104,15 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
 
       onProfileUpdated({
         ...profile,
-        full_name: fullName.trim(),
-        staff_id: staffId.trim().toUpperCase(),
+        full_name: updatedFullName,
+        staff_id: updatedStaffId,
         avatar_url: finalAvatarUrl,
       });
 
       setSuccessMessage('Profile updated successfully!');
       setTimeout(() => {
         onClose();
-      }, 1000);
+      }, 900);
     } catch (err) {
       console.error('Profile update error:', err);
       setErrorMessage(err.message || 'Failed to update profile.');
@@ -180,7 +201,7 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
             </label>
             <input
               type="text"
-              required
+              placeholder={initialName || "Enter Full Name"}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box', fontSize: '13px' }}
@@ -194,14 +215,14 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
             </label>
             <input
               type="text"
-              required
+              placeholder={initialStaffId || "Enter Staff ID"}
               value={staffId}
               onChange={(e) => setStaffId(e.target.value)}
               style={{ width: '100%', padding: '9px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box', fontSize: '13px' }}
             />
           </div>
 
-          {/* Change Password Section */}
+          {/* Change Password */}
           <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px', marginTop: '4px' }}>
             <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#0d3b66', display: 'block', marginBottom: '8px' }}>
               🔒 Change Password (Optional)
