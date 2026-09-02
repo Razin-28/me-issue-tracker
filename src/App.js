@@ -157,45 +157,68 @@ export default function App() {
 
   return (
     <div className="dashboard-container">
-      {/* Top Navigation */}
-      <div className="top-nav">
-        <button className="exit-btn" onClick={handleLogout}>
-          <span style={{ fontSize: '20px' }}>🚪</span> Exit
-        </button>
-        {activeTab !== 'home' && (
-          <button 
-            className="back-btn" 
-            onClick={handleBackNavigation}
-          >
-            ⬅️ Back to Dashboard
+      {/* Top Navigation Bar: Exit di kiri, Edit Profile di kanan sebaris */}
+      <div className="top-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button className="exit-btn" onClick={handleLogout}>
+            <span style={{ fontSize: '18px' }}>🚪</span> Exit
           </button>
-        )}
+          {activeTab !== 'home' && (
+            <button 
+              className="back-btn" 
+              onClick={handleBackNavigation}
+            >
+              ⬅️ Back to Dashboard
+            </button>
+          )}
+        </div>
+
+        {/* Butang Edit Profile sebaris dengan Exit di atas kanan */}
+        <button
+          onClick={() => setShowProfileModal(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            backgroundColor: '#0d3b66',
+            color: '#fff',
+            border: 'none',
+            padding: '8px 14px',
+            borderRadius: '6px',
+            fontWeight: 'bold',
+            fontSize: '13px',
+            cursor: 'pointer',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+          }}
+        >
+          <span>✏️</span> Edit Profile
+        </button>
       </div>
 
       {/* Main Content View */}
       {activeTab === 'home' && (
         <div className="dashboard-grid">
           {/* Main Left Hero Card */}
-          <div className="hero-card" style={{ position: 'relative' }}>
+          <div className="hero-card">
             <div className="hero-title">
               <h1>Manufacturing Engineering</h1>
               <h2>DATA TRACKER</h2>
             </div>
 
             <div className="user-profile" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              {/* Paparan Gambar Profil / Passport */}
+              {/* Gambar Passport Profil */}
               <div 
                 className="avatar" 
                 style={{ 
-                  width: '56px', 
-                  height: '68px', 
+                  width: '60px', 
+                  height: '75px', 
                   borderRadius: '6px', 
                   overflow: 'hidden', 
                   backgroundColor: '#e2e8f0', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center',
-                  border: '2px solid rgba(255,255,255,0.4)',
+                  border: '2px solid rgba(255,255,255,0.6)',
                   flexShrink: 0
                 }}
               >
@@ -206,7 +229,7 @@ export default function App() {
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                   />
                 ) : (
-                  <span style={{ fontSize: '28px' }}>👤</span>
+                  <span style={{ fontSize: '32px' }}>👤</span>
                 )}
               </div>
 
@@ -214,21 +237,6 @@ export default function App() {
                 <div className="welcome-title">Welcome,</div>
                 <div className="user-name">{displayName}</div>
                 <div className="staff-id-text">({staffIdDisplay})</div>
-                <button
-                  onClick={() => setShowProfileModal(true)}
-                  style={{
-                    marginTop: '6px',
-                    padding: '3px 8px',
-                    fontSize: '11px',
-                    background: 'rgba(255,255,255,0.2)',
-                    border: '1px solid rgba(255,255,255,0.4)',
-                    borderRadius: '4px',
-                    color: '#fff',
-                    cursor: 'pointer'
-                  }}
-                >
-                  ✏️ Edit Profile
-                </button>
               </div>
             </div>
           </div>
