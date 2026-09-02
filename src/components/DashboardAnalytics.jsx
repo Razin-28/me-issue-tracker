@@ -6,7 +6,6 @@ import {
   LineChart, Line
 } from 'recharts';
 
-// Pindahkan data malar ke luar komponen untuk mengelakkan ESLint warning/error semasa build
 const MONTHS = [
   { value: 1, label: 'January' }, { value: 2, label: 'February' },
   { value: 3, label: 'March' }, { value: 4, label: 'April' },
@@ -31,11 +30,11 @@ export default function DashboardAnalytics() {
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
 
-  // Power BI Cross-Filter (Klik pada graf untuk tapis)
+  // Power BI Cross-Filter
   const [selectedClassification, setSelectedClassification] = useState(null);
 
   // States Paparan Data
-  const [stats, setStats] = useState({ total: 0, open: 0, inProgress: 0, completed: 0 });
+  const [stats, setStats] = useState({ total: 0, open: 0, inProgress: 0, closed: 0 });
   const [statusData, setStatusData] = useState([]);
   const [locationData, setLocationData] = useState([]);
   const [classificationData, setClassificationData] = useState([]);
@@ -43,7 +42,6 @@ export default function DashboardAnalytics() {
   const [agingData, setAgingData] = useState([]);
   const [showAllLocations, setShowAllLocations] = useState(false);
 
-  // 1. Ambil data mentah sekali sahaja
   useEffect(() => {
     async function loadData() {
       setLoading(true);
@@ -58,13 +56,12 @@ export default function DashboardAnalytics() {
     loadData();
   }, []);
 
-  // 2. Pemprosesan data
   const processDashboard = useCallback(() => {
     if (!rawIssues.length) return;
 
     const now = new Date();
 
-    // Penapis Tarikh Utama
+    // Penapis Tarikh
     const dateFiltered = rawIssues.filter((item) => {
       if (filterMode === 'all') return true;
 
@@ -97,7 +94,7 @@ export default function DashboardAnalytics() {
       return true;
     });
 
-    // Cross-filtering: tapisan jika user klik bar Classification
+    // Cross-filtering
     const fullyFiltered = selectedClassification
       ? dateFiltered.filter((item) => {
           const c = item.classification ? `Class ${item.classification.toUpperCase()}` : 'UNCLASSIFIED';
@@ -107,7 +104,7 @@ export default function DashboardAnalytics() {
 
     let openCount = 0;
     let inProgressCount = 0;
-    let completedCount = 0;
+    let closedCount = 0;
     const locationMap = {};
     const classMap = {};
     let agingUnder3 = 0;
@@ -121,16 +118,18 @@ export default function DashboardAnalytics() {
 
     fullyFiltered.forEach((item) => {
       const status = (item.status || 'Open').trim().toLowerCase();
-      const isDone = status === 'completed' || status === 'complete';
+      // Menyokong padanan status lama (completed) dan baru (closed)
+      const isDone = status === 'closed' || status === 'close' || status === 'completed' || status === 'complete';
       const isInProg = status === 'in progress' || status === 'in-progress';
 
-      if (isDone) completedCount++;
+      if (isDone) closedCount++;
       else if (isInProg) inProgressCount++;
       else openCount++;
 
       const loc = item.location ? item.location.toUpperCase() : 'UNKNOWN';
       locationMap[loc] = (locationMap[loc] || 0) + 1;
 
+      // Aging analysis untuk isu belum closed
       if (!isDone) {
         const rawDateStr = item.date_time || item.created_at || item.created_date;
         if (rawDateStr) {
@@ -145,9 +144,10 @@ export default function DashboardAnalytics() {
       }
     });
 
+    // Monthly Trend
     const monthCounts = {};
     MONTHS.forEach((m) => { 
-      monthCounts[m.label.substring(0, 3)] = { created: 0, resolved: 0 }; 
+      monthCounts[m.label.substring(0, 3)] = { created: 0, closed: 0 }; 
     });
 
     fullyFiltered.forEach((item) => {
@@ -158,8 +158,8 @@ export default function DashboardAnalytics() {
           const monthKey = MONTHS[m - 1].label.substring(0, 3);
           monthCounts[monthKey].created++;
           const status = (item.status || '').trim().toLowerCase();
-          if (status === 'completed' || status === 'complete') {
-            monthCounts[monthKey].resolved++;
+          if (status === 'closed' || status === 'close' || status === 'completed' || status === 'complete') {
+            monthCounts[monthKey].closed++;
           }
         }
       }
@@ -169,13 +169,13 @@ export default function DashboardAnalytics() {
       total: fullyFiltered.length,
       open: openCount,
       inProgress: inProgressCount,
-      completed: completedCount,
+      closed: closedCount,
     });
 
     setStatusData([
       { name: 'Open', value: openCount, color: '#dc3545' },
       { name: 'In Progress', value: inProgressCount, color: '#ffc107' },
-      { name: 'Completed', value: completedCount, color: '#28a745' },
+      { name: 'Closed', value: closedCount, color: '#28a745' },
     ]);
 
     setLocationData(
@@ -200,7 +200,7 @@ export default function DashboardAnalytics() {
       Object.keys(monthCounts).map((k) => ({
         month: k,
         Created: monthCounts[k].created,
-        Resolved: monthCounts[k].resolved
+        Closed: monthCounts[k].closed
       }))
     );
 
@@ -307,8 +307,8 @@ export default function DashboardAnalytics() {
               <h2 style={{ margin: '8px 0 0 0', fontSize: '28px', color: '#d39e00' }}>{stats.inProgress}</h2>
             </div>
             <div style={{ backgroundColor: '#fff', borderLeft: '6px solid #28a745', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
-              <span style={{ fontSize: '13px', color: '#666', fontWeight: 'bold' }}>COMPLETED</span>
-              <h2 style={{ margin: '8px 0 0 0', fontSize: '28px', color: '#28a745' }}>{stats.completed}</h2>
+              <span style={{ fontSize: '13px', color: '#666', fontWeight: 'bold' }}>CLOSED</span>
+              <h2 style={{ margin: '8px 0 0 0', fontSize: '28px', color: '#28a745' }}>{stats.closed}</h2>
             </div>
           </div>
 
@@ -372,7 +372,7 @@ export default function DashboardAnalytics() {
               
               <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ marginTop: 0, color: '#0d3b66', fontSize: '16px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
-                  📈 Issues Created vs Resolved Trend
+                  📈 Issues Created vs Closed Trend
                 </h3>
                 <div style={{ width: '100%', height: '260px' }}>
                   <ResponsiveContainer width="100%" height="100%">
@@ -383,7 +383,7 @@ export default function DashboardAnalytics() {
                       <Tooltip />
                       <Legend />
                       <Line type="monotone" dataKey="Created" stroke="#dc3545" strokeWidth={2} dot={{ r: 3 }} />
-                      <Line type="monotone" dataKey="Resolved" stroke="#28a745" strokeWidth={2} dot={{ r: 3 }} />
+                      <Line type="monotone" dataKey="Closed" stroke="#28a745" strokeWidth={2} dot={{ r: 3 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
