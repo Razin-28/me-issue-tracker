@@ -7,11 +7,13 @@ import CreateIssue from './components/CreateIssue';
 import IssueList from './components/IssueList';
 import TagMapUpdates from './components/TagMap';
 import DashboardAnalytics from './components/DashboardAnalytics';
+import EditProfileModal from './components/EditProfileModal';
 
 export default function App() {
   const [session, setSession] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [activeTab, setActiveTab] = useState('home');
 
@@ -22,12 +24,10 @@ export default function App() {
     setShowAuthModal(false);
   };
 
-  // 1. Dengar perubahan Back / Forward daripada Browser & Gesture Telefon
   useEffect(() => {
     const handleHashChange = () => {
       const currentHash = window.location.hash.replace('#/', '').replace('#', '');
       
-      // Jika belum login dan hash kosong, tutup modal login dan kembali ke Landing Page
       if (!session) {
         if (currentHash === 'login') {
           setShowAuthModal(true);
@@ -37,7 +37,6 @@ export default function App() {
         return;
       }
 
-      // Jika sudah login tetapi hash kosong, bawa ke Dashboard (home) atau logout
       if (!currentHash || currentHash === '') {
         handleLogout();
       } else {
@@ -48,20 +47,16 @@ export default function App() {
       }
     };
 
-    // Semak hash semasa pertama kali dimuatkan
     handleHashChange();
-
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [session]);
 
-  // 2. Fungsi berpusat untuk menukar tab
   const navigateTo = (tabName) => {
     window.location.hash = `#/${tabName}`;
     setActiveTab(tabName);
   };
 
-  // 3. Fungsi berpusat untuk butang Back manual
   const handleBackNavigation = () => {
     if (activeTab === 'home') {
       handleLogout();
@@ -70,7 +65,6 @@ export default function App() {
     }
   };
 
-  // 4. Navigasi untuk Login & Back to Homepage
   const openLogin = () => {
     window.location.hash = '#/login';
     setShowAuthModal(true);
@@ -92,7 +86,6 @@ export default function App() {
       if (data) setUserProfile(data);
     };
 
-    // Semak sesi log masuk awal dari Supabase
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
@@ -102,7 +95,6 @@ export default function App() {
       }
     });
 
-    // Dengar perubahan status auth (Login / Logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) {
@@ -124,7 +116,7 @@ export default function App() {
     navigateTo('list');
   };
 
-  // 1. JIKA BELUM LOGIN
+  // 1. BELUM LOGIN
   if (!session) {
     if (showAuthModal) {
       return (
@@ -151,7 +143,7 @@ export default function App() {
     return <LandingPage onGoToLogin={openLogin} />;
   }
 
-  // 2. JIKA SUDAH LOGIN
+  // 2. SUDAH LOGIN
   const displayName = 
     userProfile?.full_name || 
     session.user?.user_metadata?.full_name || 
@@ -184,18 +176,59 @@ export default function App() {
       {activeTab === 'home' && (
         <div className="dashboard-grid">
           {/* Main Left Hero Card */}
-          <div className="hero-card">
+          <div className="hero-card" style={{ position: 'relative' }}>
             <div className="hero-title">
               <h1>Manufacturing Engineering</h1>
               <h2>DATA TRACKER</h2>
             </div>
 
-            <div className="user-profile">
-              <div className="avatar">👤</div>
+            <div className="user-profile" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              {/* Paparan Gambar Profil / Passport */}
+              <div 
+                className="avatar" 
+                style={{ 
+                  width: '56px', 
+                  height: '68px', 
+                  borderRadius: '6px', 
+                  overflow: 'hidden', 
+                  backgroundColor: '#e2e8f0', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  border: '2px solid rgba(255,255,255,0.4)',
+                  flexShrink: 0
+                }}
+              >
+                {userProfile?.avatar_url ? (
+                  <img 
+                    src={userProfile.avatar_url} 
+                    alt="Staff Avatar" 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  />
+                ) : (
+                  <span style={{ fontSize: '28px' }}>👤</span>
+                )}
+              </div>
+
               <div className="welcome-text">
                 <div className="welcome-title">Welcome,</div>
                 <div className="user-name">{displayName}</div>
                 <div className="staff-id-text">({staffIdDisplay})</div>
+                <button
+                  onClick={() => setShowProfileModal(true)}
+                  style={{
+                    marginTop: '6px',
+                    padding: '3px 8px',
+                    fontSize: '11px',
+                    background: 'rgba(255,255,255,0.2)',
+                    border: '1px solid rgba(255,255,255,0.4)',
+                    borderRadius: '4px',
+                    color: '#fff',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ✏️ Edit Profile
+                </button>
               </div>
             </div>
           </div>
@@ -261,6 +294,16 @@ export default function App() {
         <div>
           <TagMapUpdates onBack={handleBackNavigation} />
         </div>
+      )}
+
+      {/* Modal Edit Profile */}
+      {showProfileModal && (
+        <EditProfileModal
+          user={session.user}
+          profile={userProfile}
+          onClose={() => setShowProfileModal(false)}
+          onProfileUpdated={(updated) => setUserProfile(updated)}
+        />
       )}
 
       {/* Footer */}

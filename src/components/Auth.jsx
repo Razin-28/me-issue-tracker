@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 
 export default function Auth({ onLoginSuccess }) {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login', 'signup', 'forgot'
   const [loading, setLoading] = useState(false);
 
   // States
@@ -16,22 +16,38 @@ export default function Auth({ onLoginSuccess }) {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
+  const resetNotices = () => {
+    setErrorMessage('');
+    setSuccessMessage('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMessage('');
-    setSuccessMessage('');
+    resetNotices();
 
     try {
-      if (isSignUp) {
-        // Validation for Department Code (Must be 'ME')
+      // 1. Mod Forgot Password
+      if (authMode === 'forgot') {
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: window.location.origin,
+        });
+
+        if (error) throw error;
+
+        setSuccessMessage('Password reset link has been sent to your email. Please check your inbox!');
+        setLoading(false);
+        return;
+      }
+
+      // 2. Mod Sign Up
+      if (authMode === 'signup') {
         if (departmentCode.trim().toUpperCase() !== 'ME') {
           setErrorMessage('Invalid Department Code!');
           setLoading(false);
           return;
         }
 
-        // New User Registration
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password: password,
@@ -50,13 +66,13 @@ export default function Auth({ onLoginSuccess }) {
           setErrorMessage('This email is already registered. Please log in.');
         } else {
           setSuccessMessage('Registration successful! Please log in with your credentials.');
-          setIsSignUp(false);
+          setAuthMode('login');
           setPassword('');
           setStaffId('');
           setDepartmentCode('');
         }
       } else {
-        // User Login
+        // 3. Mod Login
         const { data, error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password: password,
@@ -88,7 +104,9 @@ export default function Auth({ onLoginSuccess }) {
       fontFamily: 'Arial, sans-serif'
     }}>
       <h2 style={{ textAlign: 'center', color: '#0d3b66', marginBottom: '20px' }}>
-        {isSignUp ? 'Staff Registration' : 'Staff Login'}
+        {authMode === 'signup' && 'Staff Registration'}
+        {authMode === 'login' && 'Staff Login'}
+        {authMode === 'forgot' && 'Reset Password'}
       </h2>
 
       {errorMessage && (
@@ -104,8 +122,7 @@ export default function Auth({ onLoginSuccess }) {
       )}
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        
-        {/* 1. Company Email */}
+        {/* Email */}
         <div>
           <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
             Email:
@@ -120,8 +137,8 @@ export default function Auth({ onLoginSuccess }) {
           />
         </div>
 
-        {/* 2. Full Name (Sign Up Only) */}
-        {isSignUp && (
+        {/* Full Name (Sign Up Sahaja) */}
+        {authMode === 'signup' && (
           <div>
             <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
               Name:
@@ -137,8 +154,8 @@ export default function Auth({ onLoginSuccess }) {
           </div>
         )}
 
-        {/* 3. Staff ID (Sign Up Only) */}
-        {isSignUp && (
+        {/* Staff ID (Sign Up Sahaja) */}
+        {authMode === 'signup' && (
           <div>
             <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
               Staff ID:
@@ -154,64 +171,75 @@ export default function Auth({ onLoginSuccess }) {
           </div>
         )}
 
-        {/* 4. Password dengan Ikon SVG Formal */}
-        <div>
-          <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
-            Password:
-          </label>
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              required
-              placeholder="Enter your Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '9px 38px 9px 9px',
-                borderRadius: '5px',
-                border: '1px solid #ccc',
-                boxSizing: 'border-box',
-                outline: 'none',
-                fontSize: '13px'
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
-              style={{
-                position: 'absolute',
-                right: '8px',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '4px',
-                color: '#64748b'
-              }}
-            >
-              {showPassword ? (
-                /* Ikon Mata Terbuka (Muncul bila teks sedang nampak) */
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              ) : (
-                /* Ikon Mata Tertutup (Muncul bila kata laluan sedang bertitik/tersembunyi) */
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                  <line x1="1" y1="1" x2="23" y2="23" />
-                </svg>
+        {/* Password (Login & Sign Up Sahaja) */}
+        {authMode !== 'forgot' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333' }}>
+                Password:
+              </label>
+              {authMode === 'login' && (
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode('forgot'); resetNotices(); }}
+                  style={{ background: 'none', border: 'none', color: '#0d3b66', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                >
+                  Forgot Password?
+                </button>
               )}
-            </button>
+            </div>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                placeholder="Enter your Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '9px 38px 9px 9px',
+                  borderRadius: '5px',
+                  border: '1px solid #ccc',
+                  boxSizing: 'border-box',
+                  outline: 'none',
+                  fontSize: '13px'
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '4px',
+                  color: '#64748b'
+                }}
+              >
+                {showPassword ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* 5. Department Code Passcode (Sign Up Only) */}
-        {isSignUp && (
+        {/* Department Code (Sign Up Sahaja) */}
+        {authMode === 'signup' && (
           <div>
             <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
               Department Code:
@@ -245,23 +273,36 @@ export default function Auth({ onLoginSuccess }) {
             marginTop: '8px'
           }}
         >
-          {loading ? 'Processing...' : (isSignUp ? 'Register' : 'Log In')}
+          {loading ? 'Processing...' : (
+            authMode === 'signup' ? 'Register' :
+            authMode === 'forgot' ? 'Send Reset Link' : 'Log In'
+          )}
         </button>
       </form>
 
-      <div style={{ textAlign: 'center', marginTop: '16px' }}>
-        <button
-          type="button"
-          onClick={() => {
-            setIsSignUp(!isSignUp);
-            setShowPassword(false);
-            setErrorMessage('');
-            setSuccessMessage('');
-          }}
-          style={{ background: 'none', border: 'none', color: '#0d3b66', cursor: 'pointer', fontSize: '13px', textDecoration: 'underline' }}
-        >
-          {isSignUp ? 'Already have an account? Log In' : "Don't have an account? Sign Up"}
-        </button>
+      {/* Navigasi Mod */}
+      <div style={{ textAlign: 'center', marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {authMode === 'forgot' ? (
+          <button
+            type="button"
+            onClick={() => { setAuthMode('login'); resetNotices(); }}
+            style={{ background: 'none', border: 'none', color: '#0d3b66', cursor: 'pointer', fontSize: '13px', textDecoration: 'underline' }}
+          >
+            ← Back to Log In
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setAuthMode(authMode === 'login' ? 'signup' : 'login');
+              setShowPassword(false);
+              resetNotices();
+            }}
+            style={{ background: 'none', border: 'none', color: '#0d3b66', cursor: 'pointer', fontSize: '13px', textDecoration: 'underline' }}
+          >
+            {authMode === 'signup' ? 'Already have an account? Log In' : "Don't have an account? Sign Up"}
+          </button>
+        )}
       </div>
     </div>
   );
