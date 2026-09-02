@@ -128,7 +128,6 @@ export default function DashboardAnalytics() {
       const loc = item.location ? item.location.toUpperCase() : 'UNKNOWN';
       locationMap[loc] = (locationMap[loc] || 0) + 1;
 
-      // Aging analysis untuk isu belum closed
       if (!isDone) {
         const rawDateStr = item.date_time || item.created_at || item.created_date;
         if (rawDateStr) {
@@ -310,7 +309,7 @@ export default function DashboardAnalytics() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
             
-            {/* Row 1: Donut Status + Classification Slicer */}
+            {/* Row 1: Solid Pie Chart + Classification Slicer */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
               
               <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
@@ -320,7 +319,16 @@ export default function DashboardAnalytics() {
                 <div style={{ width: '100%', height: '280px' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={statusData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value" label>
+                      <Pie 
+                        data={statusData} 
+                        cx="50%" 
+                        cy="50%" 
+                        innerRadius={0} 
+                        outerRadius={95} 
+                        paddingAngle={2} 
+                        dataKey="value" 
+                        label
+                      >
                         {statusData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
