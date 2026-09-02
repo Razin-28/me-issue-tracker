@@ -6,6 +6,19 @@ import {
   LineChart, Line
 } from 'recharts';
 
+// Pindahkan data malar ke luar komponen untuk mengelakkan ESLint warning/error semasa build
+const MONTHS = [
+  { value: 1, label: 'January' }, { value: 2, label: 'February' },
+  { value: 3, label: 'March' }, { value: 4, label: 'April' },
+  { value: 5, label: 'May' }, { value: 6, label: 'June' },
+  { value: 7, label: 'July' }, { value: 8, label: 'August' },
+  { value: 9, label: 'September' }, { value: 10, label: 'October' },
+  { value: 11, label: 'November' }, { value: 12, label: 'December' },
+];
+
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2, CURRENT_YEAR - 3];
+
 export default function DashboardAnalytics() {
   const [loading, setLoading] = useState(true);
   const [rawIssues, setRawIssues] = useState([]);
@@ -14,10 +27,9 @@ export default function DashboardAnalytics() {
   const [filterMode, setFilterMode] = useState('all'); 
   const [timeRange, setTimeRange] = useState('all'); 
   
-  const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
-  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
 
   // Power BI Cross-Filter (Klik pada graf untuk tapis)
   const [selectedClassification, setSelectedClassification] = useState(null);
@@ -30,17 +42,6 @@ export default function DashboardAnalytics() {
   const [trendData, setTrendData] = useState([]);
   const [agingData, setAgingData] = useState([]);
   const [showAllLocations, setShowAllLocations] = useState(false);
-
-  const months = [
-    { value: 1, label: 'January' }, { value: 2, label: 'February' },
-    { value: 3, label: 'March' }, { value: 4, label: 'April' },
-    { value: 5, label: 'May' }, { value: 6, label: 'June' },
-    { value: 7, label: 'July' }, { value: 8, label: 'August' },
-    { value: 9, label: 'September' }, { value: 10, label: 'October' },
-    { value: 11, label: 'November' }, { value: 12, label: 'December' },
-  ];
-
-  const years = [currentYear, currentYear - 1, currentYear - 2, currentYear - 3];
 
   // 1. Ambil data mentah sekali sahaja
   useEffect(() => {
@@ -57,7 +58,7 @@ export default function DashboardAnalytics() {
     loadData();
   }, []);
 
-  // 2. Pemprosesan data ala Power BI Engine
+  // 2. Pemprosesan data
   const processDashboard = useCallback(() => {
     if (!rawIssues.length) return;
 
@@ -113,13 +114,11 @@ export default function DashboardAnalytics() {
     let aging3to7 = 0;
     let agingOver7 = 0;
 
-    // Kiraan klasifikasi dibuat pada tahap dateFiltered supaya pilihan bar sentiasa nampak
     dateFiltered.forEach((item) => {
       const classKey = item.classification ? `Class ${item.classification.toUpperCase()}` : 'UNCLASSIFIED';
       classMap[classKey] = (classMap[classKey] || 0) + 1;
     });
 
-    // Kiraan metrik terperinci mengikut Cross-Filter
     fullyFiltered.forEach((item) => {
       const status = (item.status || 'Open').trim().toLowerCase();
       const isDone = status === 'completed' || status === 'complete';
@@ -129,11 +128,9 @@ export default function DashboardAnalytics() {
       else if (isInProg) inProgressCount++;
       else openCount++;
 
-      // Lokasi / Stesen
       const loc = item.location ? item.location.toUpperCase() : 'UNKNOWN';
       locationMap[loc] = (locationMap[loc] || 0) + 1;
 
-      // Analisis Usia Isu (Aging Analysis) untuk isu tertunggak
       if (!isDone) {
         const rawDateStr = item.date_time || item.created_at || item.created_date;
         if (rawDateStr) {
@@ -148,16 +145,17 @@ export default function DashboardAnalytics() {
       }
     });
 
-    // Kiraan Trend Bulanan
     const monthCounts = {};
-    months.forEach(m => { monthCounts[m.label.substring(0, 3)] = { created: 0, resolved: 0 }; });
+    MONTHS.forEach((m) => { 
+      monthCounts[m.label.substring(0, 3)] = { created: 0, resolved: 0 }; 
+    });
 
     fullyFiltered.forEach((item) => {
       const rawDateStr = item.date_time || item.created_at || item.created_date;
       if (rawDateStr) {
         const [, m] = rawDateStr.split('T')[0].split('-').map(Number);
         if (m >= 1 && m <= 12) {
-          const monthKey = months[m - 1].label.substring(0, 3);
+          const monthKey = MONTHS[m - 1].label.substring(0, 3);
           monthCounts[monthKey].created++;
           const status = (item.status || '').trim().toLowerCase();
           if (status === 'completed' || status === 'complete') {
@@ -199,7 +197,7 @@ export default function DashboardAnalytics() {
     ]);
 
     setTrendData(
-      Object.keys(monthCounts).map(k => ({
+      Object.keys(monthCounts).map((k) => ({
         month: k,
         Created: monthCounts[k].created,
         Resolved: monthCounts[k].resolved
@@ -254,21 +252,21 @@ export default function DashboardAnalytics() {
             <>
               <select
                 value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
+                onChange={(e) => setSelectedMonth(Number(e.target.value))}
                 style={{ padding: '7px 10px', borderRadius: '5px', border: 'none', fontWeight: 'bold', cursor: 'pointer', color: '#0d3b66' }}
               >
                 <option value="all">All Months</option>
-                {months.map((m) => (
+                {MONTHS.map((m) => (
                   <option key={m.value} value={m.value}>{m.label}</option>
                 ))}
               </select>
 
               <select
                 value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
                 style={{ padding: '7px 10px', borderRadius: '5px', border: 'none', fontWeight: 'bold', cursor: 'pointer', color: '#0d3b66' }}
               >
-                {years.map((y) => (
+                {YEARS.map((y) => (
                   <option key={y} value={y}>{y}</option>
                 ))}
               </select>
@@ -277,7 +275,7 @@ export default function DashboardAnalytics() {
         </div>
       </div>
 
-      {/* Slicer Indicator (Gaya Power BI) */}
+      {/* Slicer Indicator */}
       {selectedClassification && (
         <div style={{ backgroundColor: '#e2e8f0', padding: '10px 15px', borderRadius: '6px', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>Filtered by: <strong>{selectedClassification}</strong></span>
@@ -316,10 +314,9 @@ export default function DashboardAnalytics() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
             
-            {/* Row 1: Status Donut + Classification (Slicer) */}
+            {/* Row 1: Donut Status + Classification Slicer */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
               
-              {/* Graf 1: Donut Status */}
               <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ marginTop: 0, color: '#0d3b66', fontSize: '16px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
                   📊 Issue Status Distribution
@@ -339,7 +336,6 @@ export default function DashboardAnalytics() {
                 </div>
               </div>
 
-              {/* Graf 2: Classification (Slicer Interaktif) */}
               <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
                   <h3 style={{ margin: 0, color: '#0d3b66', fontSize: '16px' }}>🏷️ Classification (Click bar to cross-filter)</h3>
@@ -354,7 +350,7 @@ export default function DashboardAnalytics() {
                       <Bar 
                         dataKey="count" 
                         cursor="pointer"
-                        onClick={(entry) => setSelectedClassification(prev => prev === entry.classification ? null : entry.classification)}
+                        onClick={(entry) => setSelectedClassification((prev) => prev === entry.classification ? null : entry.classification)}
                         radius={[4, 4, 0, 0]}
                       >
                         {classificationData.map((entry, idx) => (
@@ -371,10 +367,9 @@ export default function DashboardAnalytics() {
 
             </div>
 
-            {/* Row 2: Monthly Resolution Trend & Issue Aging */}
+            {/* Row 2: Monthly Trend & Aging Analysis */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
               
-              {/* Graf 3: Monthly Trend */}
               <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ marginTop: 0, color: '#0d3b66', fontSize: '16px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
                   📈 Issues Created vs Resolved Trend
@@ -394,7 +389,6 @@ export default function DashboardAnalytics() {
                 </div>
               </div>
 
-              {/* Graf 4: Issue Aging Analysis */}
               <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ marginTop: 0, color: '#0d3b66', fontSize: '16px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
                   ⏱️ Pending Issues Aging (Unresolved Backlog)
