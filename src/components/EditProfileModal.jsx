@@ -50,7 +50,7 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
     setSuccessMessage('');
 
     try {
-      // 1. Tukar Kata Laluan (Hanya jika diisi)
+      // 1. Tukar Kata Laluan jika diisi
       if (newPassword) {
         if (newPassword.length < 6) {
           throw new Error('Password must be at least 6 characters long.');
@@ -65,7 +65,7 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
         if (pwdError) throw pwdError;
       }
 
-      // 2. Muat naik gambar ke bucket 'avatars' (Hanya jika ada fail baharu)
+      // 2. Muat naik gambar ke bucket 'avatars' jika ada fail baharu
       let finalAvatarUrl = profile?.avatar_url || null;
       if (avatarFile) {
         const fileExt = avatarFile.name.split('.').pop();
@@ -85,20 +85,20 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
         finalAvatarUrl = publicUrlData.publicUrl;
       }
 
-      // 3. Kekalkan data sedia ada jika input dibiarkan kosong
       const updatedFullName = fullName.trim() !== '' ? fullName.trim() : initialName;
       const updatedStaffId = staffId.trim() !== '' ? staffId.trim().toUpperCase() : initialStaffId;
 
-      // 4. Simpan perubahan ke jadual profiles
+      // 3. Kemas kini jadual profiles menggunakan update
       const { error: updateError } = await supabase
         .from('profiles')
-        .upsert({
-          id: user.id,
+        .update({
           full_name: updatedFullName,
           staff_id: updatedStaffId,
           avatar_url: finalAvatarUrl,
+          department: profile?.department || 'ME',
           updated_at: new Date().toISOString(),
-        });
+        })
+        .eq('id', user.id);
 
       if (updateError) throw updateError;
 
