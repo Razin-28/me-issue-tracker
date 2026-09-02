@@ -25,9 +25,19 @@ export default function App() {
   // 1. Dengar perubahan Back / Forward daripada Browser & Gesture Telefon
   useEffect(() => {
     const handleHashChange = () => {
-      const currentHash = window.location.hash.replace('#/', '');
+      const currentHash = window.location.hash.replace('#/', '').replace('#', '');
       
-      // Jika tekan back semasa di Dashboard (home), bawa ke Homepage / Login
+      // Jika belum login dan hash kosong, tutup modal login dan kembali ke Landing Page
+      if (!session) {
+        if (currentHash === 'login') {
+          setShowAuthModal(true);
+        } else {
+          setShowAuthModal(false);
+        }
+        return;
+      }
+
+      // Jika sudah login tetapi hash kosong, bawa ke Dashboard (home) atau logout
       if (!currentHash || currentHash === '') {
         handleLogout();
       } else {
@@ -37,6 +47,9 @@ export default function App() {
         }
       }
     };
+
+    // Semak hash semasa pertama kali dimuatkan
+    handleHashChange();
 
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
@@ -55,6 +68,17 @@ export default function App() {
     } else {
       navigateTo('home');
     }
+  };
+
+  // 4. Navigasi untuk Login & Back to Homepage
+  const openLogin = () => {
+    window.location.hash = '#/login';
+    setShowAuthModal(true);
+  };
+
+  const closeLogin = () => {
+    window.location.hash = '';
+    setShowAuthModal(false);
   };
 
   useEffect(() => {
@@ -106,7 +130,7 @@ export default function App() {
       return (
         <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f9', padding: '20px' }}>
           <button
-            onClick={() => setShowAuthModal(false)}
+            onClick={closeLogin}
             style={{
               padding: '8px 16px',
               borderRadius: '5px',
@@ -124,7 +148,7 @@ export default function App() {
         </div>
       );
     }
-    return <LandingPage onGoToLogin={() => setShowAuthModal(true)} />;
+    return <LandingPage onGoToLogin={openLogin} />;
   }
 
   // 2. JIKA SUDAH LOGIN
@@ -148,7 +172,7 @@ export default function App() {
         </button>
         {activeTab !== 'home' && (
           <button 
-            className="back-btn"
+            className="back-btn" 
             onClick={handleBackNavigation}
           >
             ⬅️ Back to Dashboard
