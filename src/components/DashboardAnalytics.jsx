@@ -118,7 +118,6 @@ export default function DashboardAnalytics() {
 
     fullyFiltered.forEach((item) => {
       const status = (item.status || 'Open').trim().toLowerCase();
-      // Menyokong padanan status lama (completed) dan baru (closed)
       const isDone = status === 'closed' || status === 'close' || status === 'completed' || status === 'complete';
       const isInProg = status === 'in progress' || status === 'in-progress';
 
@@ -218,10 +217,7 @@ export default function DashboardAnalytics() {
       
       {/* Header Bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', backgroundColor: '#0d3b66', padding: '15px 20px', borderRadius: '8px', color: '#fff', flexWrap: 'wrap', gap: '10px' }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: '22px' }}>Operational Issue Analytics</h2>
-          <small style={{ color: '#a5c4d4' }}>Manufacturing Engineering Issue Tracker</small>
-        </div>
+        <h2 style={{ margin: 0, fontSize: '22px' }}>Dashboard Analytics</h2>
         
         {/* Dropdown Filters */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
