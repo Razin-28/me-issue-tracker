@@ -2,168 +2,231 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  LineChart, Line
 } from 'recharts';
 
 export default function DashboardAnalytics() {
   const [loading, setLoading] = useState(true);
+  const [rawIssues, setRawIssues] = useState([]);
   
-  // State Penapis
-  const [filterMode, setFilterMode] = useState('all'); // 'all', 'preset', 'custom'
-  const [timeRange, setTimeRange] = useState('all'); // 'day', 'week', 'month', 'year'
+  // Penapis Tarikh
+  const [filterMode, setFilterMode] = useState('all'); 
+  const [timeRange, setTimeRange] = useState('all'); 
   
-  // State Bulan & Tahun Spesifik
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [selectedYear, setSelectedYear] = useState(currentYear);
 
+  // Power BI Cross-Filter (Klik pada graf untuk tapis)
+  const [selectedClassification, setSelectedClassification] = useState(null);
+
+  // States Paparan Data
   const [stats, setStats] = useState({ total: 0, open: 0, inProgress: 0, completed: 0 });
   const [statusData, setStatusData] = useState([]);
   const [locationData, setLocationData] = useState([]);
   const [classificationData, setClassificationData] = useState([]);
+  const [trendData, setTrendData] = useState([]);
+  const [agingData, setAgingData] = useState([]);
   const [showAllLocations, setShowAllLocations] = useState(false);
 
-  // Senarai Bulan
   const months = [
-    { value: 1, label: 'January' },
-    { value: 2, label: 'February' },
-    { value: 3, label: 'March' },
-    { value: 4, label: 'April' },
-    { value: 5, label: 'May' },
-    { value: 6, label: 'June' },
-    { value: 7, label: 'July' },
-    { value: 8, label: 'August' },
-    { value: 9, label: 'September' },
-    { value: 10, label: 'October' },
-    { value: 11, label: 'November' },
-    { value: 12, label: 'December' },
+    { value: 1, label: 'January' }, { value: 2, label: 'February' },
+    { value: 3, label: 'March' }, { value: 4, label: 'April' },
+    { value: 5, label: 'May' }, { value: 6, label: 'June' },
+    { value: 7, label: 'July' }, { value: 8, label: 'August' },
+    { value: 9, label: 'September' }, { value: 10, label: 'October' },
+    { value: 11, label: 'November' }, { value: 12, label: 'December' },
   ];
 
-  // Senarai Tahun
   const years = [currentYear, currentYear - 1, currentYear - 2, currentYear - 3];
 
-  // Fetch and filter analytics data
-  const fetchAnalyticsData = useCallback(async () => {
-    setLoading(true);
-    const { data: issues, error } = await supabase.from('issues').select('*');
-
-    if (error) {
-      console.error('Error fetching issues:', error.message);
+  // 1. Ambil data mentah sekali sahaja
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      const { data, error } = await supabase.from('issues').select('*');
+      if (error) {
+        console.error('Error fetching issues:', error.message);
+      } else {
+        setRawIssues(data || []);
+      }
       setLoading(false);
-      return;
     }
+    loadData();
+  }, []);
 
-    if (issues) {
-      const now = new Date();
+  // 2. Pemprosesan data ala Power BI Engine
+  const processDashboard = useCallback(() => {
+    if (!rawIssues.length) return;
 
-      const filteredIssues = issues.filter((item) => {
-        if (filterMode === 'all') return true;
+    const now = new Date();
 
+    // Penapis Tarikh Utama
+    const dateFiltered = rawIssues.filter((item) => {
+      if (filterMode === 'all') return true;
+
+      const rawDateStr = item.date_time || item.created_at || item.created_date;
+      if (!rawDateStr) return false;
+
+      const dateOnlyStr = rawDateStr.split('T')[0].split(' ')[0];
+      if (!dateOnlyStr || !dateOnlyStr.includes('-')) return false;
+
+      const [year, month, day] = dateOnlyStr.split('-').map(Number);
+      const issueDate = new Date(year, month - 1, day);
+
+      if (filterMode === 'preset') {
+        const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const diffInTime = todayDate.getTime() - issueDate.getTime();
+        const diffInDays = Math.round(diffInTime / (1000 * 3600 * 24));
+
+        if (timeRange === 'day') return diffInDays === 0;
+        if (timeRange === 'week') return diffInDays >= 0 && diffInDays <= 7;
+        if (timeRange === 'month') return diffInDays >= 0 && diffInDays <= 30;
+        if (timeRange === 'year') return diffInDays >= 0 && diffInDays <= 365;
+      }
+
+      if (filterMode === 'custom') {
+        const isYearMatch = year === Number(selectedYear);
+        if (selectedMonth === 'all') return isYearMatch;
+        return isYearMatch && month === Number(selectedMonth);
+      }
+
+      return true;
+    });
+
+    // Cross-filtering: tapisan jika user klik bar Classification
+    const fullyFiltered = selectedClassification
+      ? dateFiltered.filter((item) => {
+          const c = item.classification ? `Class ${item.classification.toUpperCase()}` : 'UNCLASSIFIED';
+          return c === selectedClassification;
+        })
+      : dateFiltered;
+
+    let openCount = 0;
+    let inProgressCount = 0;
+    let completedCount = 0;
+    const locationMap = {};
+    const classMap = {};
+    let agingUnder3 = 0;
+    let aging3to7 = 0;
+    let agingOver7 = 0;
+
+    // Kiraan klasifikasi dibuat pada tahap dateFiltered supaya pilihan bar sentiasa nampak
+    dateFiltered.forEach((item) => {
+      const classKey = item.classification ? `Class ${item.classification.toUpperCase()}` : 'UNCLASSIFIED';
+      classMap[classKey] = (classMap[classKey] || 0) + 1;
+    });
+
+    // Kiraan metrik terperinci mengikut Cross-Filter
+    fullyFiltered.forEach((item) => {
+      const status = (item.status || 'Open').trim().toLowerCase();
+      const isDone = status === 'completed' || status === 'complete';
+      const isInProg = status === 'in progress' || status === 'in-progress';
+
+      if (isDone) completedCount++;
+      else if (isInProg) inProgressCount++;
+      else openCount++;
+
+      // Lokasi / Stesen
+      const loc = item.location ? item.location.toUpperCase() : 'UNKNOWN';
+      locationMap[loc] = (locationMap[loc] || 0) + 1;
+
+      // Analisis Usia Isu (Aging Analysis) untuk isu tertunggak
+      if (!isDone) {
         const rawDateStr = item.date_time || item.created_at || item.created_date;
-        if (!rawDateStr) return false;
+        if (rawDateStr) {
+          const [y, m, d] = rawDateStr.split('T')[0].split(' ')[0].split('-').map(Number);
+          const createdDate = new Date(y, m - 1, d);
+          const ageDays = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
 
-        const dateOnlyStr = rawDateStr.split('T')[0].split(' ')[0];
-        if (!dateOnlyStr || !dateOnlyStr.includes('-')) return false;
-
-        const [year, month, day] = dateOnlyStr.split('-').map(Number);
-        const issueDate = new Date(year, month - 1, day);
-
-        if (filterMode === 'preset') {
-          const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          const diffInTime = todayDate.getTime() - issueDate.getTime();
-          const diffInDays = Math.round(diffInTime / (1000 * 3600 * 24));
-
-          if (timeRange === 'day') return diffInDays === 0;
-          if (timeRange === 'week') return diffInDays >= 0 && diffInDays <= 7;
-          if (timeRange === 'month') return diffInDays >= 0 && diffInDays <= 30;
-          if (timeRange === 'year') return diffInDays >= 0 && diffInDays <= 365;
+          if (ageDays < 3) agingUnder3++;
+          else if (ageDays <= 7) aging3to7++;
+          else agingOver7++;
         }
+      }
+    });
 
-        if (filterMode === 'custom') {
-          const isMonthMatch = selectedMonth === 'all' || (year === Number(selectedYear) && month === Number(selectedMonth));
-          const isYearMatch = year === Number(selectedYear);
+    // Kiraan Trend Bulanan
+    const monthCounts = {};
+    months.forEach(m => { monthCounts[m.label.substring(0, 3)] = { created: 0, resolved: 0 }; });
 
-          if (selectedMonth === 'all') {
-            return isYearMatch;
+    fullyFiltered.forEach((item) => {
+      const rawDateStr = item.date_time || item.created_at || item.created_date;
+      if (rawDateStr) {
+        const [, m] = rawDateStr.split('T')[0].split('-').map(Number);
+        if (m >= 1 && m <= 12) {
+          const monthKey = months[m - 1].label.substring(0, 3);
+          monthCounts[monthKey].created++;
+          const status = (item.status || '').trim().toLowerCase();
+          if (status === 'completed' || status === 'complete') {
+            monthCounts[monthKey].resolved++;
           }
-          return isMonthMatch && isYearMatch;
         }
+      }
+    });
 
-        return true;
-      });
+    setStats({
+      total: fullyFiltered.length,
+      open: openCount,
+      inProgress: inProgressCount,
+      completed: completedCount,
+    });
 
-      let openCount = 0;
-      let inProgressCount = 0;
-      let completedCount = 0;
-      const locationMap = {};
-      const classificationMap = {};
+    setStatusData([
+      { name: 'Open', value: openCount, color: '#dc3545' },
+      { name: 'In Progress', value: inProgressCount, color: '#ffc107' },
+      { name: 'Completed', value: completedCount, color: '#28a745' },
+    ]);
 
-      filteredIssues.forEach((item) => {
-        // Status Count
-        const status = (item.status || 'Open').trim().toLowerCase();
-        if (status === 'completed' || status === 'complete') {
-          completedCount++;
-        } else if (status === 'in progress' || status === 'in-progress') {
-          inProgressCount++;
-        } else {
-          openCount++;
-        }
-
-        // Location Map
-        const loc = item.location ? item.location.toUpperCase() : 'UNKNOWN';
-        locationMap[loc] = (locationMap[loc] || 0) + 1;
-
-        // Classification Map
-        const classKey = item.classification ? `Class ${item.classification.toUpperCase()}` : 'UNCLASSIFIED';
-        classificationMap[classKey] = (classificationMap[classKey] || 0) + 1;
-      });
-
-      setStats({
-        total: filteredIssues.length,
-        open: openCount,
-        inProgress: inProgressCount,
-        completed: completedCount,
-      });
-
-      setStatusData([
-        { name: 'Open', value: openCount, color: '#dc3545' },
-        { name: 'In Progress', value: inProgressCount, color: '#ffc107' },
-        { name: 'Completed', value: completedCount, color: '#28a745' },
-      ]);
-
-      const sortedLocations = Object.keys(locationMap)
+    setLocationData(
+      Object.keys(locationMap)
         .map((loc) => ({ location: loc, count: locationMap[loc] }))
-        .sort((a, b) => b.count - a.count);
+        .sort((a, b) => b.count - a.count)
+    );
 
-      setLocationData(sortedLocations);
+    setClassificationData(
+      Object.keys(classMap)
+        .map((cls) => ({ classification: cls, count: classMap[cls] }))
+        .sort((a, b) => b.count - a.count)
+    );
 
-      const sortedClassifications = Object.keys(classificationMap)
-        .map((cls) => ({ classification: cls, count: classificationMap[cls] }))
-        .sort((a, b) => b.count - a.count);
+    setAgingData([
+      { range: '< 3 Days', count: agingUnder3, fill: '#28a745' },
+      { range: '3 - 7 Days', count: aging3to7, fill: '#ffc107' },
+      { range: '> 7 Days (Critical)', count: agingOver7, fill: '#dc3545' },
+    ]);
 
-      setClassificationData(sortedClassifications);
-    }
-    setLoading(false);
-  }, [filterMode, timeRange, selectedMonth, selectedYear]);
+    setTrendData(
+      Object.keys(monthCounts).map(k => ({
+        month: k,
+        Created: monthCounts[k].created,
+        Resolved: monthCounts[k].resolved
+      }))
+    );
+
+  }, [rawIssues, filterMode, timeRange, selectedMonth, selectedYear, selectedClassification]);
 
   useEffect(() => {
-    fetchAnalyticsData();
-  }, [fetchAnalyticsData]);
+    processDashboard();
+  }, [processDashboard]);
 
   const displayedLocationData = showAllLocations ? locationData : locationData.slice(0, 20);
   const chartWidth = showAllLocations ? Math.max(1000, locationData.length * 45) : '100%';
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Arial, sans-serif', backgroundColor: '#f4f6f9', minHeight: '100vh' }}>
+    <div style={{ padding: '20px', maxWidth: '1300px', margin: '0 auto', fontFamily: 'Arial, sans-serif', backgroundColor: '#f4f6f9', minHeight: '100vh' }}>
       
       {/* Header Bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', backgroundColor: '#0d3b66', padding: '15px 20px', borderRadius: '8px', color: '#fff', flexWrap: 'wrap', gap: '10px' }}>
-        <h2 style={{ margin: 0, fontSize: '22px' }}>Dashboard Analytics</h2>
+        <div>
+          <h2 style={{ margin: 0, fontSize: '22px' }}>Operational Issue Analytics</h2>
+          <small style={{ color: '#a5c4d4' }}>Manufacturing Engineering Issue Tracker</small>
+        </div>
         
         {/* Dropdown Filters */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          
           <select
             value={filterMode}
             onChange={(e) => setFilterMode(e.target.value)}
@@ -211,9 +274,21 @@ export default function DashboardAnalytics() {
               </select>
             </>
           )}
-
         </div>
       </div>
+
+      {/* Slicer Indicator (Gaya Power BI) */}
+      {selectedClassification && (
+        <div style={{ backgroundColor: '#e2e8f0', padding: '10px 15px', borderRadius: '6px', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>Filtered by: <strong>{selectedClassification}</strong></span>
+          <button 
+            onClick={() => setSelectedClassification(null)}
+            style={{ border: 'none', background: '#0d3b66', color: '#fff', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+          >
+            Clear Filter ✕
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <p style={{ textAlign: 'center', padding: '40px' }}>Loading analytics data...</p>
@@ -239,18 +314,17 @@ export default function DashboardAnalytics() {
             </div>
           </div>
 
-          {/* Charts Layout */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
             
-            {/* Row 1: Pie Chart Status & Classification Bar Chart */}
+            {/* Row 1: Status Donut + Classification (Slicer) */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
               
-              {/* Graf 1: Issue Status Distribution */}
+              {/* Graf 1: Donut Status */}
               <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ marginTop: 0, color: '#0d3b66', fontSize: '16px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
                   📊 Issue Status Distribution
                 </h3>
-                <div style={{ width: '100%', height: '300px' }}>
+                <div style={{ width: '100%', height: '280px' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie data={statusData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value" label>
@@ -265,19 +339,31 @@ export default function DashboardAnalytics() {
                 </div>
               </div>
 
-              {/* Graf 2: Issues Breakdown by Classification */}
+              {/* Graf 2: Classification (Slicer Interaktif) */}
               <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
-                <h3 style={{ marginTop: 0, color: '#0d3b66', fontSize: '16px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
-                  🏷️ Issues Breakdown by Classification
-                </h3>
-                <div style={{ width: '100%', height: '300px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
+                  <h3 style={{ margin: 0, color: '#0d3b66', fontSize: '16px' }}>🏷️ Classification (Click bar to cross-filter)</h3>
+                </div>
+                <div style={{ width: '100%', height: '280px' }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={classificationData} margin={{ top: 20, right: 30, left: 0, bottom: 10 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="classification" />
                       <YAxis allowDecimals={false} />
                       <Tooltip />
-                      <Bar dataKey="count" fill="#4b5563" name="Total Issues" radius={[4, 4, 0, 0]} />
+                      <Bar 
+                        dataKey="count" 
+                        cursor="pointer"
+                        onClick={(entry) => setSelectedClassification(prev => prev === entry.classification ? null : entry.classification)}
+                        radius={[4, 4, 0, 0]}
+                      >
+                        {classificationData.map((entry, idx) => (
+                          <Cell 
+                            key={`cls-${idx}`} 
+                            fill={selectedClassification === entry.classification ? '#0d3b66' : '#6b7280'} 
+                          />
+                        ))}
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -285,7 +371,54 @@ export default function DashboardAnalytics() {
 
             </div>
 
-            {/* Row 2: Issues Breakdown by Location */}
+            {/* Row 2: Monthly Resolution Trend & Issue Aging */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+              
+              {/* Graf 3: Monthly Trend */}
+              <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
+                <h3 style={{ marginTop: 0, color: '#0d3b66', fontSize: '16px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
+                  📈 Issues Created vs Resolved Trend
+                </h3>
+                <div style={{ width: '100%', height: '260px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={trendData} margin={{ top: 10, right: 20, left: -10, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis allowDecimals={false} />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="Created" stroke="#dc3545" strokeWidth={2} dot={{ r: 3 }} />
+                      <Line type="monotone" dataKey="Resolved" stroke="#28a745" strokeWidth={2} dot={{ r: 3 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Graf 4: Issue Aging Analysis */}
+              <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
+                <h3 style={{ marginTop: 0, color: '#0d3b66', fontSize: '16px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
+                  ⏱️ Pending Issues Aging (Unresolved Backlog)
+                </h3>
+                <div style={{ width: '100%', height: '260px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={agingData} layout="vertical" margin={{ top: 10, right: 30, left: 30, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" allowDecimals={false} />
+                      <YAxis type="category" dataKey="range" width={110} />
+                      <Tooltip />
+                      <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                        {agingData.map((entry, idx) => (
+                          <Cell key={`aging-${idx}`} fill={entry.fill} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Row 3: Issues Breakdown by Location */}
             <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '15px' }}>
                 <h3 style={{ margin: 0, color: '#0d3b66', fontSize: '16px' }}>
