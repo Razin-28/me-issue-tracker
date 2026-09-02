@@ -116,7 +116,7 @@ export default function App() {
     navigateTo('list');
   };
 
-  // 1. BELUM LOGIN
+  // 1. JIKA BELUM LOGIN
   if (!session) {
     if (showAuthModal) {
       return (
@@ -143,7 +143,7 @@ export default function App() {
     return <LandingPage onGoToLogin={openLogin} />;
   }
 
-  // 2. SUDAH LOGIN
+  // 2. JIKA SUDAH LOGIN
   const displayName = 
     userProfile?.full_name || 
     session.user?.user_metadata?.full_name || 
@@ -157,7 +157,7 @@ export default function App() {
 
   return (
     <div className="dashboard-container">
-      {/* Top Navigation Bar: Exit di kiri, Edit Profile di kanan sebaris */}
+      {/* Top Navigation Bar */}
       <div className="top-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button className="exit-btn" onClick={handleLogout}>
@@ -173,26 +173,28 @@ export default function App() {
           )}
         </div>
 
-        {/* Butang Edit Profile sebaris dengan Exit di atas kanan */}
-        <button
-          onClick={() => setShowProfileModal(true)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            backgroundColor: '#0d3b66',
-            color: '#fff',
-            border: 'none',
-            padding: '8px 14px',
-            borderRadius: '6px',
-            fontWeight: 'bold',
-            fontSize: '13px',
-            cursor: 'pointer',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
-          }}
-        >
-          <span>✏️</span> Edit Profile
-        </button>
+        {/* Butang Edit Profile HANYA dipaparkan semasa di tab home */}
+        {activeTab === 'home' && (
+          <button
+            onClick={() => setShowProfileModal(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: '#0d3b66',
+              color: '#fff',
+              border: 'none',
+              padding: '8px 14px',
+              borderRadius: '6px',
+              fontWeight: 'bold',
+              fontSize: '13px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+            }}
+          >
+            <span>✏️</span> Edit Profile
+          </button>
+        )}
       </div>
 
       {/* Main Content View */}
