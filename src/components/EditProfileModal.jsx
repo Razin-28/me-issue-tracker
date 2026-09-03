@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 
 export default function EditProfileModal({ user, profile, onClose, onProfileUpdated }) {
+  const fileInputRef = useRef(null);
+
   const initialName = 
     profile?.full_name || 
     user?.user_metadata?.full_name || 
@@ -30,17 +32,20 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
     if (existingAvatar) setPreviewUrl(existingAvatar);
   }, [initialName, initialStaffId, profile?.avatar_url, user?.user_metadata?.avatar_url]);
 
+  // Fungsi apabila pengguna memilih / menukar gambar
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      setErrorMessage('File size exceeds 2 MB limit!');
+    // Hadkan saiz maksimum (cth: 5 MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage('Image size exceeds 5 MB limit!');
       return;
     }
 
     setErrorMessage('');
     setAvatarFile(file);
+    // Paparkan pratonton serta-merta
     setPreviewUrl(URL.createObjectURL(file));
   };
 
@@ -51,7 +56,7 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
     setSuccessMessage('');
 
     try {
-      // 1. Tukar Kata Laluan jika dimasukkan
+      // 1. Kemas kini Kata Laluan jika diisi
       if (newPassword) {
         if (newPassword.length < 6) {
           throw new Error('Password must be at least 6 characters long.');
@@ -66,63 +71,94 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
         if (pwdError) throw pwdError;
       }
 
-      // 2. Muat naik gambar ke bucket 'avatars' jika ada fail baharu
+      // 2. Muat naik gambar baharu jika pengguna menukar gambar
       let finalAvatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
+
       if (avatarFile) {
         const fileExt = avatarFile.name.split('.').pop();
+        // Nama fail unik dengan timestamp supaya tidak tersekat dengan cache
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
         const filePath = `${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('avatars')
-          .upload(filePath, avatarFile, { upsert: true });
+          .upload(filePath, avatarFile, {
+            cacheControl: '3600',
+            upsert: true,
+          });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) throw new Error('Failed to upload image: ' + uploadError.message);
 
         const { data: publicUrlData } = supabase.storage
           .from('avatars')
           .getPublicUrl(filePath);
 
-        finalAvatarUrl = publicUrlData.publicUrl;
+        finalAvatarUrl = `${publicUrlData.publicUrl}?t=${Date.now()}`;
       }
 
       const updatedFullName = fullName.trim() !== '' ? fullName.trim() : initialName;
       const updatedStaffId = staffId.trim() !== '' ? staffId.trim().toUpperCase() : initialStaffId;
 
-      // 3. Simpan ke jadual 'profiles' menggunakan upsert dengan onConflict: 'id'
-      const { data: updatedData, error: updateError } = await supabase
+      // 3. Simpan maklumat ke jadual 'profiles'
+      const profilePayload = {
+        full_name: updatedFullName,
+        staff_id: updatedStaffId,
+        avatar_url: finalAvatarUrl,
+        department: profile?.department || 'ME',
+        updated_at: new Date().toISOString(),
+      };
+
+      let { data: updatedData, error: updateError } = await supabase
         .from('profiles')
-        .upsert({
-          id: user.id,
-          full_name: updatedFullName,
-          staff_id: updatedStaffId,
-          avatar_url: finalAvatarUrl,
-          department: profile?.department || 'ME',
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'id' })
-        .select()
-        .single();
+        .update(profilePayload)
+        .eq('id', user.id)
+        .select();
 
-      if (updateError) throw updateError;
+      // Jika tiada baris dijumpai mengikut id, cuba kemas kini mengikut staff_id
+      if (!updatedData || updatedData.length === 0) {
+        const { data: staffData, error: staffError } = await supabase
+          .from('profiles')
+          .update(profilePayload)
+          .eq('staff_id', updatedStaffId)
+          .select();
 
-      // 4. Simpan salinan ke user_metadata (Auth) sebagai sandaran kekal
+        if (staffError) throw staffError;
+        updatedData = staffData;
+      }
+
+      // Jika rekod profil belum wujud langsung, masukkan (insert)
+      if (!updatedData || updatedData.length === 0) {
+        const { data: insertData, error: insertError } = await supabase
+          .from('profiles')
+          .insert([{ id: user.id, ...profilePayload }])
+          .select();
+
+        if (insertError) throw insertError;
+        updatedData = insertData;
+      }
+
+      // 4. Simpan salinan ke Auth metadata sebagai sandaran sesi
       await supabase.auth.updateUser({
         data: {
           full_name: updatedFullName,
           staff_id: updatedStaffId,
           avatar_url: finalAvatarUrl,
-        }
+        },
       });
 
-      // 5. Kemas kini state komponen induk
-      onProfileUpdated(updatedData || {
+      // 5. Kemas kini paparan halaman utama serta-merta
+      const finalProfileObject = (updatedData && updatedData[0]) ? updatedData[0] : {
         ...profile,
         full_name: updatedFullName,
         staff_id: updatedStaffId,
         avatar_url: finalAvatarUrl,
-      });
+      };
 
-      setSuccessMessage('Profile updated successfully!');
+      if (onProfileUpdated) {
+        onProfileUpdated(finalProfileObject);
+      }
+
+      setSuccessMessage('Profile and photo updated successfully!');
       setTimeout(() => {
         onClose();
       }, 900);
@@ -174,36 +210,75 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
         )}
 
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {/* Avatar Preview & Upload */}
+          
+          {/* Avatar Preview & Tukar Gambar */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              width: '85px',
-              height: '105px',
-              borderRadius: '6px',
-              border: '2px dashed #0d3b66',
-              overflow: 'hidden',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: '#f8fafc'
-            }}>
+            <div 
+              onClick={() => fileInputRef.current && fileInputRef.current.click()}
+              style={{
+                width: '90px',
+                height: '115px',
+                borderRadius: '8px',
+                border: '2px dashed #0d3b66',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f8fafc',
+                cursor: 'pointer',
+                position: 'relative'
+              }}
+              title="Click to change photo"
+            >
               {previewUrl ? (
-                <img src={previewUrl} alt="Avatar Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img 
+                  src={previewUrl} 
+                  alt="Avatar Preview" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
               ) : (
                 <span style={{ fontSize: '36px', color: '#94a3b8' }}>👤</span>
               )}
+
+              <div style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                backgroundColor: 'rgba(13, 59, 102, 0.75)',
+                color: '#fff',
+                fontSize: '10px',
+                textAlign: 'center',
+                padding: '3px 0'
+              }}>
+                Change
+              </div>
             </div>
 
-            <label style={{
-              fontSize: '12px',
-              color: '#0d3b66',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              textDecoration: 'underline'
-            }}>
-              Choose Photo
-              <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
-            </label>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current && fileInputRef.current.click()}
+              style={{
+                border: 'none',
+                background: 'none',
+                color: '#0d3b66',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                textDecoration: 'underline'
+              }}
+            >
+              {previewUrl ? 'Change Photo' : 'Upload Photo'}
+            </button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onClick={(e) => { e.target.value = null; }} // Membolehkan pilih fail sama semula jika perlu
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+            />
           </div>
 
           {/* Full Name */}
