@@ -195,7 +195,7 @@ export default function App() {
       <div className="top-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <div>
           <button className="exit-btn" onClick={handleLogout}>
-            <span style={{ fontSize: '18px' }}>🚪</span> Exit
+            <span style={{ fontSize: '18px' }}>🚪</span> Logout
           </button>
         </div>
 
