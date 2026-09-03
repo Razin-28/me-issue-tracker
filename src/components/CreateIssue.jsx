@@ -129,17 +129,30 @@ export default function CreateIssue({ onBackToDashboard, onIssueCreated }) {
           />
         </div>
 
-        {/* Group */}
+        {/* Group (Dropdown) */}
         <div>
           <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Group:</label>
-          <input 
-            type="text" 
-            value={groupName} 
-            onChange={(e) => setGroupName(e.target.value)} 
+          <select
             required
-            placeholder="Enter Group" 
-            style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
-          />
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '5px',
+              border: '1px solid #ccc',
+              boxSizing: 'border-box',
+              backgroundColor: '#fff',
+              cursor: 'pointer',
+              color: groupName ? '#000' : '#888'
+            }}
+          >
+            <option value="" disabled hidden>Choose Group</option>
+            <option value="Assembly Line" style={{ color: '#000' }}>Assembly Line</option>
+            <option value="Test Line" style={{ color: '#000' }}>Test Line</option>
+            <option value="Transmission" style={{ color: '#000' }}>Transmission</option>
+            <option value="IT" style={{ color: '#000' }}>IT</option>
+          </select>
         </div>
 
         {/* Location / Station */}
