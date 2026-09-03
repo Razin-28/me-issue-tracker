@@ -59,10 +59,6 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
     return Array.from(new Set(issues.map((i) => i.location).filter(Boolean))).sort();
   }, [issues]);
 
-  const uniqueGroups = useMemo(() => {
-    return Array.from(new Set(issues.map((i) => i.group_name).filter(Boolean))).sort();
-  }, [issues]);
-
   const uniqueNames = useMemo(() => {
     return Array.from(new Set(issues.map((i) => i.staff_name || i.staff_id).filter(Boolean))).sort();
   }, [issues]);
@@ -199,7 +195,7 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
     setUpdating(false);
   };
 
-  // Logik Penapisan (Filter 'In Progress' merangkumi semua fasa In Progress)
+  // Logik Penapisan
   const filteredIssues = issues.filter((issue) => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
@@ -350,7 +346,7 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
             </div>
           </div>
 
-          {/* 2. Status (Diringkaskan kepada Open, In Progress, Closed) */}
+          {/* 2. Status */}
           <div style={{ minWidth: '0' }}>
             <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px', whiteSpace: 'nowrap' }}>
               📌 Status:
@@ -401,7 +397,7 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
             </select>
           </div>
 
-          {/* 5. Group */}
+          {/* 5. Group (Standardized: Assembly Line, Test Line, Transmission, IT) */}
           <div style={{ minWidth: '0' }}>
             <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#444', display: 'block', marginBottom: '4px', whiteSpace: 'nowrap' }}>
               👥 Group:
@@ -412,9 +408,10 @@ export default function IssueList({ onBackToDashboard, refreshTrigger }) {
               style={{ width: '100%', padding: '6px 4px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '11px', backgroundColor: '#fff', boxSizing: 'border-box', cursor: 'pointer' }}
             >
               <option value="All">All Groups</option>
-              {uniqueGroups.map((grp) => (
-                <option key={grp} value={grp}>{grp}</option>
-              ))}
+              <option value="Assembly Line">Assembly Line</option>
+              <option value="Test Line">Test Line</option>
+              <option value="Transmission">Transmission</option>
+              <option value="IT">IT</option>
             </select>
           </div>
 
