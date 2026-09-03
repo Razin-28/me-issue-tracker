@@ -18,7 +18,7 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [avatarFile, setAvatarFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(profile?.avatar_url || null);
+  const [previewUrl, setPreviewUrl] = useState(profile?.avatar_url || user?.user_metadata?.avatar_url || null);
   const [uploading, setUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -26,8 +26,9 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
   useEffect(() => {
     if (initialName) setFullName(initialName);
     if (initialStaffId) setStaffId(initialStaffId);
-    if (profile?.avatar_url) setPreviewUrl(profile.avatar_url);
-  }, [initialName, initialStaffId, profile?.avatar_url]);
+    const existingAvatar = profile?.avatar_url || user?.user_metadata?.avatar_url;
+    if (existingAvatar) setPreviewUrl(existingAvatar);
+  }, [initialName, initialStaffId, profile?.avatar_url, user?.user_metadata?.avatar_url]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -50,7 +51,7 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
     setSuccessMessage('');
 
     try {
-      // 1. Tukar Kata Laluan jika diisi
+      // 1. Tukar Kata Laluan jika dimasukkan
       if (newPassword) {
         if (newPassword.length < 6) {
           throw new Error('Password must be at least 6 characters long.');
@@ -66,7 +67,7 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
       }
 
       // 2. Muat naik gambar ke bucket 'avatars' jika ada fail baharu
-      let finalAvatarUrl = profile?.avatar_url || null;
+      let finalAvatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
       if (avatarFile) {
         const fileExt = avatarFile.name.split('.').pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
@@ -88,21 +89,33 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
       const updatedFullName = fullName.trim() !== '' ? fullName.trim() : initialName;
       const updatedStaffId = staffId.trim() !== '' ? staffId.trim().toUpperCase() : initialStaffId;
 
-      // 3. Kemas kini jadual profiles menggunakan update
-      const { error: updateError } = await supabase
+      // 3. Simpan ke jadual 'profiles' menggunakan upsert dengan onConflict: 'id'
+      const { data: updatedData, error: updateError } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: user.id,
           full_name: updatedFullName,
           staff_id: updatedStaffId,
           avatar_url: finalAvatarUrl,
           department: profile?.department || 'ME',
           updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
+        }, { onConflict: 'id' })
+        .select()
+        .single();
 
       if (updateError) throw updateError;
 
-      onProfileUpdated({
+      // 4. Simpan salinan ke user_metadata (Auth) sebagai sandaran kekal
+      await supabase.auth.updateUser({
+        data: {
+          full_name: updatedFullName,
+          staff_id: updatedStaffId,
+          avatar_url: finalAvatarUrl,
+        }
+      });
+
+      // 5. Kemas kini state komponen induk
+      onProfileUpdated(updatedData || {
         ...profile,
         full_name: updatedFullName,
         staff_id: updatedStaffId,
