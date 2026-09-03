@@ -229,7 +229,7 @@ export default function Auth({ onLoginSuccess, forceRecoveryMode = false, onPass
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
-                placeholder={authMode === 'update_password' ? 'Enter new password (min 6 characters)' : 'Enter your Password'}
+                placeholder={authMode === 'update_password' ? 'Enter new password (min 6 characters)' : 'Enter your Password (min 6 characters)'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 style={{
