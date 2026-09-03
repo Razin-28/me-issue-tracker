@@ -32,12 +32,10 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
     if (existingAvatar) setPreviewUrl(existingAvatar);
   }, [initialName, initialStaffId, profile?.avatar_url, user?.user_metadata?.avatar_url]);
 
-  // Fungsi apabila pengguna memilih / menukar gambar
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Hadkan saiz maksimum (cth: 5 MB)
     if (file.size > 5 * 1024 * 1024) {
       setErrorMessage('Image size exceeds 5 MB limit!');
       return;
@@ -45,7 +43,6 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
 
     setErrorMessage('');
     setAvatarFile(file);
-    // Paparkan pratonton serta-merta
     setPreviewUrl(URL.createObjectURL(file));
   };
 
@@ -56,7 +53,6 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
     setSuccessMessage('');
 
     try {
-      // 1. Kemas kini Kata Laluan jika diisi
       if (newPassword) {
         if (newPassword.length < 6) {
           throw new Error('Password must be at least 6 characters long.');
@@ -71,12 +67,10 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
         if (pwdError) throw pwdError;
       }
 
-      // 2. Muat naik gambar baharu jika pengguna menukar gambar
       let finalAvatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
 
       if (avatarFile) {
         const fileExt = avatarFile.name.split('.').pop();
-        // Nama fail unik dengan timestamp supaya tidak tersekat dengan cache
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
         const filePath = `${fileName}`;
 
@@ -99,7 +93,6 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
       const updatedFullName = fullName.trim() !== '' ? fullName.trim() : initialName;
       const updatedStaffId = staffId.trim() !== '' ? staffId.trim().toUpperCase() : initialStaffId;
 
-      // 3. Simpan maklumat ke jadual 'profiles'
       const profilePayload = {
         full_name: updatedFullName,
         staff_id: updatedStaffId,
@@ -108,13 +101,12 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
         updated_at: new Date().toISOString(),
       };
 
-      let { data: updatedData, error: updateError } = await supabase
+      let { data: updatedData } = await supabase
         .from('profiles')
         .update(profilePayload)
         .eq('id', user.id)
         .select();
 
-      // Jika tiada baris dijumpai mengikut id, cuba kemas kini mengikut staff_id
       if (!updatedData || updatedData.length === 0) {
         const { data: staffData, error: staffError } = await supabase
           .from('profiles')
@@ -126,7 +118,6 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
         updatedData = staffData;
       }
 
-      // Jika rekod profil belum wujud langsung, masukkan (insert)
       if (!updatedData || updatedData.length === 0) {
         const { data: insertData, error: insertError } = await supabase
           .from('profiles')
@@ -137,7 +128,6 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
         updatedData = insertData;
       }
 
-      // 4. Simpan salinan ke Auth metadata sebagai sandaran sesi
       await supabase.auth.updateUser({
         data: {
           full_name: updatedFullName,
@@ -146,7 +136,6 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
         },
       });
 
-      // 5. Kemas kini paparan halaman utama serta-merta
       const finalProfileObject = (updatedData && updatedData[0]) ? updatedData[0] : {
         ...profile,
         full_name: updatedFullName,
@@ -210,8 +199,6 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
         )}
 
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          
-          {/* Avatar Preview & Tukar Gambar */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
             <div 
               onClick={() => fileInputRef.current && fileInputRef.current.click()}
@@ -275,13 +262,12 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              onClick={(e) => { e.target.value = null; }} // Membolehkan pilih fail sama semula jika perlu
+              onClick={(e) => { e.target.value = null; }}
               onChange={handleFileChange}
               style={{ display: 'none' }}
             />
           </div>
 
-          {/* Full Name */}
           <div>
             <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
               Full Name:
@@ -295,7 +281,6 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
             />
           </div>
 
-          {/* Staff ID */}
           <div>
             <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', display: 'block', marginBottom: '4px' }}>
               Staff ID:
@@ -309,7 +294,6 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
             />
           </div>
 
-          {/* Change Password */}
           <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px', marginTop: '4px' }}>
             <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#0d3b66', display: 'block', marginBottom: '8px' }}>
               🔒 Change Password (Optional)
@@ -334,7 +318,6 @@ export default function EditProfileModal({ user, profile, onClose, onProfileUpda
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
             <button
               type="button"
