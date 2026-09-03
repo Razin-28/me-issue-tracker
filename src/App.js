@@ -28,6 +28,7 @@ export default function App() {
     setActiveTab('home');
     setShowAuthModal(false);
     setIsRecoveryMode(false);
+    setUserProfile(null);
   };
 
   useEffect(() => {
@@ -84,17 +85,47 @@ export default function App() {
     setShowAuthModal(false);
   };
 
-  useEffect(() => {
-    const fetchProfile = async (userId) => {
-      const { data } = await supabase
+  // Fungsi komprehensif untuk memuat profil pengguna
+  const fetchProfile = async (currentUser) => {
+    if (!currentUser) return;
+    try {
+      // 1. Cuba cari mengikut id auth
+      let { data } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', userId)
-        .single();
-        
-      if (data) setUserProfile(data);
-    };
+        .eq('id', currentUser.id)
+        .maybeSingle();
 
+      // 2. Sekiranya tiada, cuba semak mengikut staff_id
+      const metadataStaffId = currentUser.user_metadata?.staff_id;
+      if (!data && metadataStaffId) {
+        const { data: byStaffId } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('staff_id', metadataStaffId)
+          .maybeSingle();
+        data = byStaffId;
+      }
+
+      // 3. Sekiranya tiada, cuba semak mengikut email
+      if (!data && currentUser.email) {
+        const { data: byEmail } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('email', currentUser.email)
+          .maybeSingle();
+        data = byEmail;
+      }
+
+      if (data) {
+        setUserProfile(data);
+      }
+    } catch (err) {
+      console.error('Fetch profile exception:', err);
+    }
+  };
+
+  useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (window.location.hash.includes('type=recovery')) {
         setIsRecoveryMode(true);
@@ -102,9 +133,12 @@ export default function App() {
       }
       setSession(session);
       if (session) {
-        fetchProfile(session.user.id);
-        window.location.hash = '#/home';
-        setActiveTab('home');
+        fetchProfile(session.user);
+        const currentHash = window.location.hash.replace('#/', '').replace('#', '');
+        if (!currentHash) {
+          window.location.hash = '#/home';
+          setActiveTab('home');
+        }
       }
     });
 
@@ -116,10 +150,7 @@ export default function App() {
 
       setSession(session);
       if (session && !isRecoveryMode) {
-        fetchProfile(session.user.id);
-        setShowAuthModal(false);
-        window.location.hash = '#/home';
-        setActiveTab('home');
+        fetchProfile(session.user);
       } else if (!session) {
         setUserProfile(null);
         window.location.hash = '';
@@ -135,7 +166,6 @@ export default function App() {
   };
 
   // 1. JIKA DALAM MOD RECOVERY (LEPAS KLIK LINK RESET PASSWORD DI EMEL)
-  // Menghalang pengguna terus masuk dashboard sehingga password baru disimpan
   if (isRecoveryMode) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f9', padding: '40px 20px' }}>
@@ -188,6 +218,11 @@ export default function App() {
     userProfile?.staff_id || 
     session.user?.user_metadata?.staff_id || 
     'STAFF';
+
+  // Sandaran avatar_url daripada jadual profil atau auth user_metadata
+  const currentAvatarUrl = 
+    userProfile?.avatar_url || 
+    session.user?.user_metadata?.avatar_url;
 
   return (
     <div className="dashboard-container">
@@ -245,8 +280,8 @@ export default function App() {
               <div 
                 className="avatar" 
                 style={{ 
-                  width: '60px', 
-                  height: '75px', 
+                  width: '65px', 
+                  height: '80px', 
                   borderRadius: '6px', 
                   overflow: 'hidden', 
                   backgroundColor: '#e2e8f0', 
@@ -257,9 +292,9 @@ export default function App() {
                   flexShrink: 0
                 }}
               >
-                {userProfile?.avatar_url ? (
+                {currentAvatarUrl ? (
                   <img 
-                    src={userProfile.avatar_url} 
+                    src={currentAvatarUrl} 
                     alt="Staff Avatar" 
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                   />
@@ -345,7 +380,14 @@ export default function App() {
           user={session.user}
           profile={userProfile}
           onClose={() => setShowProfileModal(false)}
-          onProfileUpdated={(updated) => setUserProfile(updated)}
+          onProfileUpdated={(updated) => {
+            setUserProfile(updated);
+            if (session?.user?.user_metadata) {
+              session.user.user_metadata.avatar_url = updated.avatar_url;
+              session.user.user_metadata.full_name = updated.full_name;
+              session.user.user_metadata.staff_id = updated.staff_id;
+            }
+          }}
         />
       )}
 
